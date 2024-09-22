@@ -64,7 +64,7 @@ mv "$HOME/Library/Application Support/Code/User/settings.json" ~/vscode-settings
 ln -sf ~/dev/packages/vscode/settings.json "$HOME/Library/Application Support/Code/User/settings.json"
 ```
 
-6. Commit and push
+4. Commit and push
 
 ```sh
 cd ~/dev/packages/vscode
