@@ -1,0 +1,130 @@
+{
+  "workbench.colorTheme": "One Dark Pro Darker",
+  "editor.wordWrap": "off",
+  // Less chonky scroll bars
+  "editor.scrollbar.verticalScrollbarSize": 8,
+  "editor.scrollbar.horizontalScrollbarSize": 8,
+  "editor.inlineSuggest.enabled": true,
+  "editor.renderWhitespace": "none",
+  "editor.fontSize": 14,
+  // https://monaspace.githubnext.com/
+  "editor.fontFamily": "'Monaspace Neon Var', monospace",
+  "editor.fontLigatures": "'calt', 'liga', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'ss09'",
+  "editor.fontVariations": "'wght' 350, 'wdth' 100",
+  "editor.lineHeight": 1.6,
+  "editor.lineNumbers": "on",
+  "editor.folding": true,
+  "editor.minimap.enabled": true,
+  "editor.scrollBeyondLastLine": false,
+  "editor.guides.indentation": true,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "terminal.integrated.fontFamily": "'Monaspace Krypton Var', monospace",
+  "terminal.integrated.fontSize": 13,
+  "terminal.integrated.lineHeight": 1.4,
+  "terminal.integrated.letterSpacing": 1,
+  // apc extension for advanced ui customisation
+  "apc.parts.font.family": {
+    "sidebar": "'Monaspace Krypton Var', monospace",
+    "titlebar": "'Monaspace Argon Var', monospace",
+    "tabs": "'Monaspace Argon Var', monospace",
+    "activityBar": "'Monaspace Krypton Var', monospace",
+    "panel": "'Monaspace Krypton Var', monospace",
+    "statusbar": "'Monaspace Krypton Var', monospace",
+    "settings-body": "'Monaspace Krypton Var', monospace",
+    "extension-editor": "'Monaspace Krypton Var', monospace", // Install the font and restart vscode
+    "monaco-menu": "'Monaspace Krypton Var', monospace"
+  },
+  "apc.electron": {
+    "frame": false
+  },
+  "apc.activityBar": {
+    "size": 38
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[shellscript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  // Theme overrides
+  "workbench.colorCustomizations": {
+    "editor.background": "#131927",
+    "editorLineNumber.foreground": "#fff2",
+    "editor.lineHighlightBackground": "#ffffff09",
+    "sideBar.background": "#131927",
+    "sideBarSectionHeader.background": "#070f1c",
+    "dropdown.background": "#070f1c",
+    "activityBar.background": "#070f1c",
+    "editorGroupHeader.tabsBackground": "#131927",
+    "tab.activeBackground": "#070f1c",
+    "tab.unfocusedActiveBackground": "#131927",
+    "tab.inactiveBackground": "#131927",
+    "panel.background": "#131927",
+    "panel.border": "#070f1c",
+    "panelSectionHeader.background": "#131927",
+    "statusBar.background": "#070f1c",
+    "terminal.background": "#070f1c",
+    // The topmost bar background
+    "titleBar.activeBackground": "#070f1c",
+    "input.background": "#070f1c"
+  },
+  "zenMode.fullScreen": false,
+  "zenMode.centerLayout": false,
+  // multiCommand
+  "multiCommand.commands": [
+    {
+      "command": "multiCommand.betterZenMode",
+      "sequence": [
+        "workbench.action.toggleZenMode",
+        "settings.cycle.zenModeExtras"
+      ]
+    }
+  ],
+  // Settings cycle
+  "settings.cycle": [
+    {
+      "id": "zenModeExtras",
+      "values": [
+        {
+          "editor.lineNumbers": "off",
+          "editor.guides.indentation": false,
+          "editor.minimap.enabled": false,
+          "editor.wordWrap": "on",
+          "scm.diffDecorations": "none"
+        },
+        {
+          "editor.lineNumbers": "on",
+          "editor.guides.indentation": true,
+          "editor.minimap.enabled": true,
+          "editor.wordWrap": "off",
+          "scm.diffDecorations": "all"
+        }
+      ]
+    }
+  ],
+  "scm.diffDecorations": "all",
+  "svelte.enable-ts-plugin": true,
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "files.autoSave": "onFocusChange",
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "terminal.external.osxExec": "Warp.app",
+  // Don't annoy me when deleting or moving things
+  "explorer.confirmDelete": false,
+  "explorer.confirmDragAndDrop": false,
+  // Update imports when moving a file
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "console-ninja.featureSet": "Community",
+  // Turn off sounds
+  "editor.accessibilitySupport": "off",
+  "accessibility.signals.lineHasError": {
+    "sound": "off"
+  },
+  // Remove the search bar + prev/next arrows at the top
+  // Just use cmd+p, cmd+shift+p, cmd+z, cmd+shift+z instead
+  "window.commandCenter": false,
+  "terminal.integrated.env.osx": {}
+}

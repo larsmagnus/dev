@@ -1,0 +1,41 @@
+{
+	"name": "larsmagnus-dev",
+	"description": "dev setup, config and productivity scripts",
+	"version": "0.0.1",
+	"author": "Lars Magnus Klavenes <larsmagnus@gmail.com> (https://larsmagnus.co)",
+	"funding": "https://larsmagnus.co/donate",
+	"license": "MIT",
+	"packageManager": "pnpm@8.15.4",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/larsmagnus/dev.git"
+	},
+	"bugs": {
+		"url": "https://github.com/larsmagnus/dev/issues"
+	},
+	"homepage": "https://larsmagnus.co",
+	"scripts": {
+		"lint": "pnpm dlx shellcheck ./packages/scripts/*.sh",
+		"format": "pnpm prettier . --write"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.11.0",
+		"eslint": "^9.11.0",
+		"eslint-config-prettier": "^9.1.0",
+		"eslint-plugin-jsdoc": "^50.2.4",
+		"eslint-plugin-unicorn": "^55.0.0",
+		"globals": "^15.9.0",
+		"prettier": "^3.3.3",
+		"prettier-plugin-sh": "^0.14.0",
+		"shellcheck": "^3.0.0"
+	},
+	"keywords": [
+		"setup",
+		"config",
+		"dev",
+		"scripts",
+		"shell",
+		"productivity",
+		"vscode"
+	]
+}

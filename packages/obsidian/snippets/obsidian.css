@@ -1,0 +1,63 @@
+body {
+	--font-text-theme: ui-sans-serif, system-ui, -apple-system;
+	--font-text-override: var(--font-text-theme);
+	--font-monospace-theme: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		Liberation Mono, Courier New, monospace;
+	--font-monospace-override: var(--font-monospace-theme);
+}
+
+.ͼ1 .cm-scroller {
+	line-height: 1.55;
+}
+
+.cm-contentContainer {
+	line-height: 1.6;
+}
+
+.nav-folder-title[data-path] .nav-folder-title-content::before {
+	font-size: 1.3em;
+}
+
+/* add icons to the file tree */
+.nav-folder-title {
+	.nav-folder-title-content::before {
+		content: var(--icon);
+	}
+
+	&[data-path='Assets'] {
+		--icon: '📦 ';
+	}
+	&[data-path='AI'] {
+		--icon: '🤖 ';
+	}
+	&[data-path='Daily'] {
+		--icon: '🕙 ';
+	}
+	&[data-path='Weekly'] {
+		--icon: '🗓️ ';
+	}
+	&[data-path='Excalidraw'] {
+		--icon: '🎨 ';
+	}
+	&[data-path='Books'] {
+		--icon: '📚 ';
+	}
+	&[data-path='Ideas'] {
+		--icon: '💡 ';
+	}
+	&[data-path='Templates'] {
+		--icon: '📝 ';
+	}
+	&[data-path='Scripts'] {
+		--icon: '🤡 ';
+	}
+	&[data-path='Projects'] {
+		--icon: '🛠 ';
+	}
+	&[data-path='Work'] {
+		--icon: '💻 ';
+	}
+	&[data-path='Work/Weeks'] {
+		--icon: '🗓 ';
+	}
+}

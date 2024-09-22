@@ -1,0 +1,11 @@
+{
+	"spellcheck": true,
+	"promptDelete": false,
+	"showFrontmatter": true,
+	"alwaysUpdateLinks": true,
+	"newFileLocation": "current",
+	"attachmentFolderPath": "assets",
+	"useMarkdownLinks": false,
+	"showRibbon": true,
+	"propertiesInDocument": "hidden"
+}
