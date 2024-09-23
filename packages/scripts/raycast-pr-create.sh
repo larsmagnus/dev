@@ -27,9 +27,9 @@ branch_base=${BASE_BRANCH:-origin/main}
 lines_stat=$(git diff --shortstat "$branch_base" | xargs)
 lines_changed=$(echo "$lines_stat" | awk '{print $4 + $6}')
 
-# Clean up commit messages
+# Get body messages from staged commits only
 commit_messages=$(git log "$branch_base"..HEAD --oneline --pretty=format:%b)
-# trim
+# Format commit messages: remove empty lines | remove duplicate dashes | remove leading spaces | add dash to lines that don't start with a dash
 commit_messages_formatted=$(echo "$commit_messages" | sed '/^[[:space:]]*$/d' | sed 's/^- \+/- /' | sed 's/^ \+//g' | sed 's/^[^-]/- &/')
 
 # TODO: placeholder

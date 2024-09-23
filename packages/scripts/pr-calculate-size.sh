@@ -10,11 +10,11 @@ lines_changed=$1
 
 # Configure the size ranges and emojis
 declare -A size_map=(
-	[tiny]="🐜 Tiny"
-	[small]="🐤 Small"
-	[medium]="🐔 Medium"
-	[large]="🐘 Large"
-	[huge]="🐋 Huge"
+	[tiny]="🐜 Tiny PR"
+	[small]="🐤 Small PR"
+	[medium]="🐔 Medium PR"
+	[large]="🐘 Large PR"
+	[huge]="🐋 Huge PR"
 )
 
 # Determine the size category based on lines_changed
