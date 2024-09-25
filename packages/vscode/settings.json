@@ -46,13 +46,19 @@
 	"apc.listRow": {
 		"parts": {
 			"quick-input-list": {
-				"fontSize": 14
+				"fontSize": 14,
+				"height": 38
 			}
 		}
 	},
 	// Set the font of the quickInput
 	"apc.stylesheet": {
-		".quick-input-list.custom-list-row .monaco-list-row": "font-family: 'Monaspace Argon Var', monospace;"
+		// list items
+		".quick-input-list.custom-list-row .monaco-list-row": "font-family: 'Monaspace Argon Var', monospace;",
+		// list item icon - vertically center
+		".quick-input-widget .quick-input-list-entry .codicon[class*=codicon-]": "font-size: 15px; margin-top: 8px",
+		// input field
+		".quick-input-widget .monaco-inputbox": "font-family: 'Monaspace Argon Var', monospace; padding: 8px; border-radius: 6px; font-size: 14px;"
 	},
 	"[json]": {
 		"editor.defaultFormatter": "esbenp.prettier-vscode"
