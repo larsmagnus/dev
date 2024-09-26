@@ -35,6 +35,7 @@ commit_messages_formatted=$(echo "$commit_messages" | sed '/^[[:space:]]*$/d' | 
 # TODO: placeholder
 pr_url=https://github.com/pulls/
 silent_mode=true
+
 for arg in "$@"; do
 	if [[ "$arg" == "--silent" || "$arg" == "-s" ]]; then
 		silent_mode=true
@@ -46,7 +47,7 @@ echo -e "🚀 ${color_green}${font_bold}PR $1 created!${style_none}"
 echo -e "$pr_url\n"
 echo "$lines_stat"
 echo -e "Total lines changed $lines_changed\n"
-echo -e "${commit_messages_formatted//\\n/\\n- }\n\nCloses #$1"
+echo -e "${commit_messages_formatted}\n\nCloses #$1"
 
 # Step 10: Conditionally open the URL in the browser if not in silent mode
 if [ "$silent_mode" = false ]; then

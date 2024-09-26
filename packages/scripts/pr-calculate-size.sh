@@ -2,33 +2,22 @@
 
 # Check if lines_changed is passed as an argument
 if [ -z "$1" ]; then
-	echo "Error: lines_changed value is required."
+	echo "Error: Lines changed is required."
 	exit 1
 fi
 
 lines_changed=$1
-
-# Configure the size ranges and emojis
-declare -A size_map=(
-	[tiny]="🐜 Tiny PR"
-	[small]="🐤 Small PR"
-	[medium]="🐔 Medium PR"
-	[large]="🐘 Large PR"
-	[huge]="🐋 Huge PR"
-)
+pr_size="🐋 Huge PR"
 
 # Determine the size category based on lines_changed
 if [ "$lines_changed" -le 10 ]; then
-	pr_size="${size_map[tiny]}"
+	pr_size="🐜 Tiny PR"
 elif [ "$lines_changed" -le 50 ]; then
-	pr_size="${size_map[small]}"
+	pr_size="🐤 Small PR"
 elif [ "$lines_changed" -le 100 ]; then
-	pr_size="${size_map[medium]}"
+	pr_size="🐔 Medium PR"
 elif [ "$lines_changed" -le 500 ]; then
-	pr_size="${size_map[large]}"
-else
-	pr_size="${size_map[huge]}"
+	pr_size="🐘 Large PR"
 fi
 
-# Output the result
 echo "$pr_size ($lines_changed lines)"
