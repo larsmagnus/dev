@@ -1,0 +1,21 @@
+{
+	"$schema": "./node_modules/oxlint/configuration_schema.json",
+	"plugins": ["eslint", "import", "unicorn", "typescript", "oxc"],
+	"categories": {
+		"correctness": "error",
+		"suspicious": "error",
+		"perf": "error"
+	},
+	"ignorePatterns": [
+		"node_modules",
+		".playwright-mcp",
+		"playwright-report",
+		"test-results",
+		"pnpm-lock.yaml"
+	],
+	"options": {
+		"typeAware": true,
+		"typeCheck": true,
+		"maxWarnings": 0
+	}
+}

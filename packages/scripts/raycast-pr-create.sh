@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# TODO: this is just a test script
+# @note this is just a test script
 
 # Required parameters:
 # @raycast.schemaVersion 1

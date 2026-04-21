@@ -1,0 +1,30 @@
+{
+	"$schema": "./node_modules/oxfmt/configuration_schema.json",
+	"semi": false,
+	"trailingComma": "es5",
+	"singleQuote": true,
+	"printWidth": 80,
+	"sortPackageJson": false,
+	"useTabs": true,
+	"sortImports": {
+		"newlinesBetween": true,
+		"sortSideEffects": true,
+		"groups": [
+			"side_effect",
+			["type-builtin", "value-builtin"],
+			["type-external", "value-external"],
+			["type-internal", "value-internal"],
+			["type-parent", "value-parent"],
+			["type-sibling", "value-sibling"],
+			["type-index", "value-index"],
+			"unknown"
+		]
+	},
+	"ignorePatterns": [
+		"node_modules",
+		".playwright-mcp",
+		"playwright-report",
+		"test-results",
+		"pnpm-lock.yaml"
+	]
+}
