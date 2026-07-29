@@ -11,15 +11,17 @@ Dev setup, tooling, themes and productivity workflows.
 
 ## Claude Code
 
-[`CLAUDE.md`](./CLAUDE.md) and [`.claude/agents/`](./.claude/agents/) are versioned here and symlinked back to the root `~/.claude/` so changes are tracked in git.
+[`CLAUDE.md`](./CLAUDE.md) and everything in [`.claude/`](./.claude/) — agents, skills, and whatever else gets added — are versioned here and symlinked back into `~/.claude/` so changes are tracked in git. Add new Claude config in this repo rather than in `~/.claude/` directly, then link it.
 
 ### Restoring symlinks
 
-If you clone this repo fresh, re-create the symlinks manually:
+If you clone this repo fresh, re-create the symlinks:
 
 ```sh
 ln -sf "$(pwd)/CLAUDE.md" ~/.claude/CLAUDE.md
-ln -sf "$(pwd)/.claude/agents" ~/.claude/agents
+for entry in .claude/*; do
+  ln -sfn "$(pwd)/$entry" ~/.claude/"$(basename "$entry")"
+done
 ```
 
 ## Disclaimer
