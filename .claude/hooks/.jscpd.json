@@ -1,7 +1,7 @@
 {
 	"path": ["."],
 	"minLines": 5,
-	"minTokens": 50,
+	"minTokens": 20,
 	"ignore": [
 		"**/node_modules/**",
 		"**/dist/**",
@@ -9,6 +9,8 @@
 		"**/out/**",
 		"**/*.test.*",
 		"**/*.spec.*",
+		"**/*.stories.ts",
+		"**/*.stories.tsx",
 		"**/components/ui/**"
 	],
 	"reporters": ["console"],
