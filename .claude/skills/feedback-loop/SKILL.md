@@ -1,7 +1,9 @@
 ---
 name: feedback-loop
 description: Self-improvement feedback loop. Run after a session, prompt, or plan has been implemented. Reviews the Claude session to draw systematic learnings about approach, workflow, and context — not one-off code fixes. Takes an optional comment naming something the user wants to improve; the run then centres on that. Outputs a report only; no auto-applying changes. Use when user says "feedback loop", "self-review", or invokes /feedback-loop.
-argument-hint: "Something you want to improve, or nothing for a full sweep"
+argument-hint: 'Something you want to improve, or nothing for a full sweep'
+context: fork
+agent: general-purpose
 ---
 
 # Feedback Loop
@@ -9,6 +11,8 @@ argument-hint: "Something you want to improve, or nothing for a full sweep"
 > A feedback loop is a cyclical process where output becomes input for future operations, enabling adaptation and growth. Keep loops short — validate faster, more often.
 
 The purpose is to improve **how Claude works** over time, not to review code. Findings must make future sessions better, not fix the last one. Output one consolidated report; do not auto-apply changes, commit, or write to memory — the user decides what to act on.
+
+This runs forked, so there's no inherited conversation history — Phase 1's transcript read is what supplies it, not context. `AskUserQuestion` is unavailable forked; the one place this skill would use it (an ambiguous comment) instead proceeds on the likelier reading and says so in `Verdict`.
 
 ## Orientation
 
@@ -54,7 +58,7 @@ Run the sweep above **and** a targeted pass. The targeted pass is additional, ne
 
 - **Find the specifics.** Locate the concrete turns, tool calls, and diffs where the comment's subject shows up. Cite or quote them — a finding anchored to a real turn beats a plausible-sounding summary.
 - **Look for disconfirming evidence on purpose.** Where did the thing _not_ happen? Did it happen for a reason the user couldn't see from outside? Searching only for confirmation manufactures agreement, which is worse than no report.
-- **Habitual comments widen the search.** For "you always…", "every time…", "in general…", the current transcript is too small a sample. Grep recent transcripts across all projects — `ls -t ~/.claude/projects/*/*.jsonl | head -n 20`, then grep for the pattern. Cheap grep only; do not read whole transcripts. Report how many sessions were checked.
+- **Habitual comments widen the search.** For "you always…", "every time…", "in general…", the current transcript is too small a sample, and 20 recent transcripts is a floor, not a target — widen further (more transcripts, older ones, other projects) whenever the claim is specific enough that a real recurrence should surface. Search the _behavior_, not just likely user phrasing: a pattern that keeps recurring may never have been called out in these exact words before, so also grep for the artefact it would leave (an Edit shrinking a block just added, a diff undoing the same class of thing). Cheap grep only; do not read whole transcripts. Report how many sessions were checked and what was searched for, so a thin search reads as thin rather than as a clean result.
 
 ## Phase 2: Analyse
 
