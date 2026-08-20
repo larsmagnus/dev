@@ -11,7 +11,9 @@ Dev setup, tooling, themes and productivity workflows.
 
 ## Claude Code
 
-[`CLAUDE.md`](./CLAUDE.md) and everything in [`.claude/`](./.claude/) — agents, skills, and whatever else gets added — are versioned here and symlinked back into `~/.claude/` so changes are tracked in git. Add new Claude config in this repo rather than in `~/.claude/` directly, then link it.
+[`CLAUDE.md`](./CLAUDE.md) and everything in [`.claude/`](./.claude/) are symlinked into `~/.claude/` to track my global setup.
+
+Add new Claude config in this repo rather than in `~/.claude/` directly, then link it.
 
 ### Restoring symlinks
 

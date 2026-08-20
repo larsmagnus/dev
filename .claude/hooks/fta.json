@@ -1,0 +1,4 @@
+{
+	"score_cap": 50,
+	"exclude_directories": ["components/ui"]
+}

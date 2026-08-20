@@ -2,6 +2,10 @@
 
 # Claude
 .claude/worktrees
+# unlike project-level .claude/settings.local.json, Claude Code doesn't
+# auto-ignore this at ~/.claude scope - guard it here in case one is ever
+# added, since it's the natural place for machine-local secrets
+.claude/settings.local.json
 
 #mcp 
 .playwright-mcp/

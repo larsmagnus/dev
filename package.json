@@ -15,12 +15,20 @@
 	},
 	"homepage": "https://larsmagnus.co",
 	"scripts": {
-		"lint": "oxlint --fix && oxfmt"
+		"lint": "oxlint --fix && oxfmt",
+		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
+		"@types/node": "26.2.0",
 		"oxfmt": "0.46.0",
 		"oxlint": "1.61.0",
-		"oxlint-tsgolint": "0.21.1"
+		"oxlint-tsgolint": "0.21.1",
+		"typescript": "7.0.2"
+	},
+	"dependencies": {
+		"fta-cli": "3.0.0",
+		"jscpd": "5.0.16",
+		"zod": "4.4.3"
 	},
 	"keywords": [
 		"setup",

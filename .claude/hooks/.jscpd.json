@@ -1,0 +1,17 @@
+{
+	"path": ["."],
+	"minLines": 5,
+	"minTokens": 50,
+	"ignore": [
+		"**/node_modules/**",
+		"**/dist/**",
+		"**/build/**",
+		"**/out/**",
+		"**/*.test.*",
+		"**/*.spec.*",
+		"**/components/ui/**"
+	],
+	"reporters": ["console"],
+	"output": "report",
+	"gitignore": true
+}
