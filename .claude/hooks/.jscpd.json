@@ -1,4 +1,5 @@
 {
+	"$schema": "https://www.schemastore.org/jscpd.json",
 	"path": ["."],
 	"minLines": 5,
 	"minTokens": 20,
