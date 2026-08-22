@@ -1,19 +1,49 @@
 {
-	"env": {
-		"CLAUDE_CODE_MAX_OUTPUT_TOKENS": "50000"
-	},
+	"$schema": "https://www.schemastore.org/claude-code-settings.json",
 	"model": "sonnet",
-	"statusLine": {
-		"type": "command",
-		"command": "input=$(cat); model=$(echo \"$input\" | jq -r '.model.display_name'); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); git_branch=$(cd \"$cwd\" && git branch --show-current 2>/dev/null || echo 'no-git'); printf '\\033[2m%s@%s\\033[0m:\\033[2m%s\\033[0m \\033[2m(%s)\\033[0m \\033[2m[%s]\\033[0m' \"$(whoami)\" \"$(hostname -s)\" \"$(basename \"$cwd\")\" \"$git_branch\" \"$model\""
-	},
-	"enabledPlugins": {
-		"mattpocock-skills@claude-plugins-official": true
-	},
-	"alwaysThinkingEnabled": true,
 	"effortLevel": "medium",
 	"tui": "fullscreen",
+	"cleanupPeriodDays": 90,
+	"alwaysThinkingEnabled": true,
 	"autoMemoryEnabled": true,
+	"env": {
+		"CLAUDE_CODE_MAX_OUTPUT_TOKENS": "50000",
+		"DISABLE_TELEMETRY": "1",
+		"DISABLE_ERROR_REPORTING": "1",
+		"CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+	},
+	"permissions": {
+		"allow": [
+			"WebFetch(domain:oxc.rs)",
+			"WebFetch(domain:www.npmjs.com)",
+			"WebFetch(domain:docs.claude.com)",
+			"WebFetch(domain:bundlephobia.com)"
+		],
+		"deny": [
+			"Read ~/.ssh/**",
+			"Read ~/.aws/**",
+			"Read **/.env",
+			"Read **/.env.*",
+			"Read **/.envrc",
+			"Read **/secrets/**",
+			"Read **/*.pem",
+			"Read **/*.key",
+			"Read **/*secret*",
+			"Read **/*credential*",
+			"Read ~/.git-credentials",
+			"Edit ~/.bashrc",
+			"Edit ~/.zshrc",
+			"Edit ~/.bash_profile",
+			"Edit ~/.zprofile",
+			"Edit ~/.profile",
+			"Edit **/.env",
+			"Edit **/.env.*",
+			"Bash(sudo *)",
+			"Bash(mkfs *)",
+			"Bash(dd *)",
+			"Bash(rm -rf *)"
+		]
+	},
 	"hooks": {
 		"PostToolUse": [
 			{
@@ -30,5 +60,12 @@
 				]
 			}
 		]
+	},
+	"statusLine": {
+		"type": "command",
+		"command": "input=$(cat); model=$(echo \"$input\" | jq -r '.model.display_name'); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); git_branch=$(cd \"$cwd\" && git branch --show-current 2>/dev/null || echo 'no-git'); printf '\\033[2m%s@%s\\033[0m:\\033[2m%s\\033[0m \\033[2m(%s)\\033[0m \\033[2m[%s]\\033[0m' \"$(whoami)\" \"$(hostname -s)\" \"$(basename \"$cwd\")\" \"$git_branch\" \"$model\""
+	},
+	"enabledPlugins": {
+		"mattpocock-skills@claude-plugins-official": true
 	}
 }
