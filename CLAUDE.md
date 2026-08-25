@@ -2,20 +2,20 @@
 
 > **Scope:** Follow these principles for all code changes, tests, and technical decisions unless explicitly overridden by project-specific CLAUDE.md files.
 
-## Primary principles
+## Primary Principles
 
-- Favor simplicity over cleverness.
-- Favor readability over brevity.
-- Favor functional code, early returns and shallow nesting.
-- Write strict, typesafe code. Use zod to validate unknown inputs. Never use the `any` type, even in tests.
-- Always validate solutions (correctness, appropriateness, maintainability, simplicity) and run typechecks, linting, tests, formatting after significant changes.
+- Favor simplicity over cleverness
+- Favor readability over brevity
+- Favor functional code, early returns and shallow nesting
+- Write strict, typesafe code. Use zod to validate unknown inputs. Never use the `any` type, even in tests
+- Validate solutions (correctness, appropriateness, maintainability, simplicity) and run typechecks, linting, tests and formatting after significant changes
 - Strive for DRY code, but never at the expense of DX, simplicity and pragmatism
-- Use the most idiomatic approach for the language and framework.
-- Strive to match the patterns and code style of the existing codebase.
-- Use @agents/test-architect when writing or reviewing tests.
-- Use @agents/docs-architect when creating documentation, system prompts, or subagents.
+- Use the idiomatic approach for the language and framework
+- Strive to match the patterns and code style of the existing code
+- Use `@agents/test-architect` when writing or reviewing tests
+- Use `@agents/docs-architect` when creating documentation, system prompts, or subagents
 
-## Comments
+## Documentation & Comments
 
 - Prefer minimal comments. In order: self-explanatory code, tests that show behavior, valuable non-obvious inline comments, standalone docs — reach for the next tier only when the one before it can't carry the point.
 - Comments explain WHY (rationale, constraints, gotchas), never WHAT (the code already shows that).
@@ -29,7 +29,9 @@
 
 ## Planning
 
-- When the problem space involves many considered-and-rejected approaches, create a structured debugging doc (problem / tried and rejected / not attempted) before entering plan mode. This significantly improves plan quality by surfacing prior art and ruling out dead ends upfront.
+When the problem space involves many considered-and-rejected approaches, create a structured debugging doc (problem / tried and rejected / not attempted) before entering plan mode.
+
+This improves plan quality by surfacing prior art and ruling out dead ends upfront.
 
 ## Testing
 
@@ -37,7 +39,7 @@ For detailed testing guidance, use the `@agents/test-architect` subagent when wr
 
 ### Testing quick reference
 
-- Priority: Integration > Browser/UI > Unit tests
+- Priority: Integration &gt; Browser/UI &gt; Unit tests
 - Write for humans, test behavior not implementation
 - Use realistic values (`user-123`), not `foo/bar/baz`
 - Keep tests WET, avoid complex abstractions
