@@ -9,5 +9,5 @@
 		"noEmit": true,
 		"types": ["node"]
 	},
-	"include": [".claude/hooks/**/*.mts"]
+	"include": [".claude/hooks/**/*.mts", ".claude/agents/**/scripts/**/*.ts"]
 }
