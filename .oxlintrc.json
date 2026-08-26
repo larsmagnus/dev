@@ -1,6 +1,16 @@
 {
 	"$schema": "./node_modules/oxlint/configuration_schema.json",
-	"plugins": ["eslint", "import", "unicorn", "typescript", "oxc"],
+	"plugins": [
+		"eslint",
+		"import",
+		"unicorn",
+		"typescript",
+		"oxc",
+		"react",
+		"react-perf",
+		"jsx-a11y",
+		"vitest"
+	],
 	"categories": {
 		"correctness": "error",
 		"suspicious": "error",
@@ -17,5 +27,36 @@
 		"typeAware": true,
 		"typeCheck": true,
 		"maxWarnings": 0
-	}
+	},
+	"rules": {
+		"typescript/no-explicit-any": "error",
+		"typescript/consistent-type-assertions": [
+			"error",
+			{ "assertionStyle": "never" }
+		],
+		"consistent-type-specifier-style": "error",
+		"react/react-in-jsx-scope": "off",
+		"react/rules-of-hooks": "error",
+		"react/only-export-components": ["warn", { "allowConstantExport": true }],
+		"no-restricted-imports": [
+			"error",
+			{
+				"patterns": [
+					{
+						"group": ["./*", "../**", ".", ".."],
+						"message": "Use the `@/*` path alias instead of relative imports."
+					}
+				]
+			}
+		]
+	},
+	"overrides": [
+		{
+			"files": ["src/components/ui/**"],
+			"rules": {
+				"react/only-export-components": "off",
+				"no-restricted-imports": "off"
+			}
+		}
+	]
 }
