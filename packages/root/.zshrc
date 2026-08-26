@@ -1,5 +1,7 @@
 alias pnp="pnpm"
 
+alias killport="~/sites/dev/packages/scripts/killport.sh"
+
 source $HOME/antigen.zsh
 
 # Load the oh-my-zsh's library.
