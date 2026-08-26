@@ -7,21 +7,37 @@
 - Favor simplicity over cleverness
 - Favor readability over brevity
 - Favor functional code, early returns and shallow nesting
+- Favor self-documenting code over standalone docs and inline comments
 - Write strict, typesafe code. Use zod to validate unknown inputs. Never use the `any` type, even in tests
 - Validate solutions (correctness, appropriateness, maintainability, simplicity) and run typechecks, linting, tests and formatting after significant changes
 - Strive for DRY code, but never at the expense of DX, simplicity and pragmatism
 - Use the idiomatic approach for the language and framework
 - Strive to match the patterns and code style of the existing code
 - Use `@agents/test-architect` when writing or reviewing tests
-- Use `@agents/docs-architect` when creating documentation, system prompts, or subagents
+- Use `@agents/docs-architect` when writing markdown, creating documentation, system prompts, or subagents
 
-## Documentation & Comments
+## Prose
 
-- Prefer minimal comments. In order: self-explanatory code, tests that show behavior, valuable non-obvious inline comments, standalone docs — reach for the next tier only when the one before it can't carry the point.
-- Comments explain WHY (rationale, constraints, gotchas), never WHAT (the code already shows that).
-- Avoid comments coupled with code: specific counts, file name references, any other reference that may cause drift or become a maintenance burden
-- Structure like TSDoc: open with a one-line conclusion a cold reader needs first. Do not open on an implementation detail or a forward/backward reference ("below"/"above"/"as mentioned") — that's mid-thought, not a start.
-- Length should track content, not the reverse: a long comment justified by a concrete example, payload, or short list of cases is fine; a long comment that's prose narrating the author's own debugging process is not.
+- Prose explain WHY, the code shows WHAT
+- Reserve prose for what code cannot express: ADRs, decisions, design choices, intent and reasoning - even if this is not the current approach in the project
+- Never couple prose with code: specific counts, file name references, any other reference will cause drift or become a maintenance burden
+- Never open on an implementation detail or mention a forward/backward reference ("below"/"above"/"as mentioned"/"previously"/"after")
+- Never restate signatures or what the code shows - If there's no non-obvious rationale, write the shortest true prose on the intent
+- Never narrate your debugging process - It may seem important and non-obvious at the time, but it becomes bloat after the fact
+
+### Docs (standalone)
+
+- Code is the truth, docs are rationale - Documentation cannot be executed or tested, so it quickly goes out of sync with code
+- Only consider docs when the code can't carry the why on its own - even then, docs must be well justified
+- Order of preference for docs: Whichever tier carries the point, in order of preference: self-documenting code, a behavior-driven test, short code comment, or a terse standalone doc
+
+### Code comments
+
+Default to no comments. When you want to write a comment, make the code carry the point instead: naming, extraction, types, zod schemas.
+
+- Block comments are added to every function, method and class - this is hygiene, not bloat
+- One TSDoc block comment per function - open with a one-line conclusion a cold reader needs, don't add a tag per param
+- Single-line comments are rare, not routine. Only write if a careful reader would think "wait, why" - even then it must be well-justified
 
 ## Instructions
 
@@ -29,9 +45,11 @@
 
 ## Planning
 
-When the problem space involves many considered-and-rejected approaches, create a structured debugging doc (problem / tried and rejected / not attempted) before entering plan mode.
+When the problem space involves many considered-and-rejected approaches, create a temporary exploration, debugging or spike doc:
 
-This improves plan quality by surfacing prior art and ruling out dead ends upfront.
+- Sections: problem, goal, tried and rejected, not attempted
+- Create the doc before entering plan mode - This improves plan quality by surfacing prior art and ruling out dead ends upfront
+- Discard the doc at the end of the session
 
 ## Testing
 
