@@ -16,7 +16,7 @@
  *       {
  *         "matcher": "Edit|Write",
  *         "hooks": [
- *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/check-duplication.mts" }
+ *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/duplication/index.mts" }
  *         ]
  *       }
  *     ]

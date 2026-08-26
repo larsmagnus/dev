@@ -16,6 +16,7 @@
 		"allow": [
 			"WebFetch(domain:oxc.rs)",
 			"WebFetch(domain:www.npmjs.com)",
+			"WebFetch(domain:code.claude.com)",
 			"WebFetch(domain:docs.claude.com)",
 			"WebFetch(domain:bundlephobia.com)"
 		],
@@ -51,11 +52,15 @@
 				"hooks": [
 					{
 						"type": "command",
-						"command": "node --no-warnings ~/.claude/hooks/check-complexity.mts"
+						"command": "node --no-warnings ~/.claude/hooks/format/index.mts"
 					},
 					{
 						"type": "command",
-						"command": "node --no-warnings ~/.claude/hooks/check-duplication.mts"
+						"command": "node --no-warnings ~/.claude/hooks/complexity/index.mts"
+					},
+					{
+						"type": "command",
+						"command": "node --no-warnings ~/.claude/hooks/duplication/index.mts"
 					}
 				]
 			}

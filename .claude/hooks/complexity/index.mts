@@ -15,7 +15,7 @@
  *       {
  *         "matcher": "Edit|Write",
  *         "hooks": [
- *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/check-complexity.mts" }
+ *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/complexity/index.mts" }
  *         ]
  *       }
  *     ]
