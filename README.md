@@ -22,6 +22,7 @@ Some of the setup I use every day for work.
 Do as much deterministic work as possible with hooks.
 
 - [complexity](.claude/hooks/complexity/index.mts) - Check code complexity with fta to keep files simple
+- [docs-review](.claude/hooks/docs-review/index.mts) - Flag new inline comments for docs-architect review against CLAUDE.md
 - [duplication](.claude/hooks/duplication/index.mts) - Check for duplicates and near-duplicates to avoid bloat
 - [format](.claude/hooks/format/index.mts) - Format and auto-fix with oxlint and oxfmt to reduce iteration cycles
 
@@ -46,6 +47,7 @@ Keep agents lean and in the background.
 Make them easy and predictable to use for humans and agents.
 
 - [commit](.claude/skills/commit/SKILL.md)
+- [docs](.claude/skills/docs/SKILL.md)
 - [feedback-loop](.claude/skills/feedback-loop/SKILL.md)
 
 ---

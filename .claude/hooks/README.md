@@ -7,6 +7,7 @@
 | [format](format/index.mts)           | Format and auto-fix with oxlint and oxfmt to reduce iteration cycles | Runs the project's own [oxlint](https://oxc.rs/docs/guide/usage/linter) `--fix` then [oxfmt](https://oxc.rs/docs/guide/usage/formatter) | write  | edited file   |
 | [complexity](complexity/index.mts)   | Check code complexity with fta to keep files simple                  | Runs [fta-cli](https://ftaproject.dev/), fails above the score cap                                                                      | report | edited file   |
 | [duplication](duplication/index.mts) | Check for duplicates and near-duplicates to avoid bloat              | Runs [jscpd](https://jscpd.dev/), fails if the edited file shares a duplicated block in the project                                     | report | whole project |
+| [docs-review](docs-review/index.mts) | Flag new inline comments for docs-architect review against CLAUDE.md | Detects a comment the edit added or changed, tells Claude to review just that file's comments via the `docs-architect` agent            | report | edited file   |
 
 ### Config
 
@@ -28,6 +29,14 @@ Scripts run with `cwd` set to the edited project's root to apply the project's o
 
 **Note:** both default configs ignore `components/ui`
 
+#### docs-review
+
+- **No external tool or config:** a regex heuristic (`//` and `/* */`), not a comment parser
+- **Precision:** for an `Edit`, only a comment the edit itself added or changed (diffed against `old_string`) triggers a flag; for a `Write`, any comment in the new content does
+- **Follow-up isn't automatic:** the hook only flags and asks Claude to invoke `docs-architect` on the file - whether that actually happens depends on Claude acting on the feedback, same as any other `report`-mode hook
+
+**Note:** runs on any file's raw text regardless of extension, not just recognized source files - a JSONC file's `//` comments trigger it the same as a `.ts` file's
+
 ### Wiring
 
 - This directory and `settings.json` are symlinked into `~/.claude` (see root [README](../../README.md))
@@ -39,6 +48,7 @@ Scripts run with `cwd` set to the edited project's root to apply the project's o
 ### Dependencies
 
 - `format` only imports `zod` and resolves oxlint/oxfmt from the target project
+- `docs-review` only imports `zod` - no external comment-parsing library
 - `fta-cli`, `jscpd` and `zod` live in this repo's root `package.json`
 
 **Note:** Node resolves each script's imported modules from their (symlink-resolved) location upward, so from `dev/node_modules`

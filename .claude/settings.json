@@ -62,6 +62,10 @@
 					{
 						"type": "command",
 						"command": "node --no-warnings ~/.claude/hooks/duplication/index.mts"
+					},
+					{
+						"type": "command",
+						"command": "node --no-warnings ~/.claude/hooks/docs-review/index.mts"
 					}
 				]
 			}
