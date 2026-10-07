@@ -19,21 +19,23 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {
-		"@types/node": "26.2.0",
-		"oxfmt": "0.65.0",
-		"oxlint": "1.80.0",
-		"oxlint-tsgolint": "7.0.2001",
+		"@types/node": "26.6.4",
+		"oxfmt": "0.72.0",
+		"oxlint": "1.87.0",
+		"oxlint-tsgolint": "7.0.2003",
 		"typescript": "7.0.2"
 	},
 	"dependencies": {
-		"fta-cli": "3.0.1",
-		"jscpd": "5.0.16",
-		"zod": "4.4.3"
+		"fta-cli": "3.1.0",
+		"jscpd": "5.4.0",
+		"zod": "4.6.5"
 	},
 	"keywords": [
 		"setup",
 		"config",
 		"dev",
+		"claude",
+		"skills",
 		"scripts",
 		"shell",
 		"productivity",
