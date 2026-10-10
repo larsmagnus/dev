@@ -1,0 +1,12 @@
+{
+	"name": "Dark (terminal dock)",
+	"base": "dark",
+	"overrides": {
+		"composerSidebarBackground": "#131927",
+		"userMessageBackground": "#070f1c",
+		"userMessageBackgroundHover": "#0d1626",
+		"bashMessageBackgroundColor": "#070f1c",
+		"memoryBackgroundColor": "#070f1c",
+		"selectionBg": "#254744"
+	}
+}
