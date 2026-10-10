@@ -1,5 +1,5 @@
 {
-	"name": "larsmagnus-mods",
+	"name": "larsmagnus",
 	"owner": { "name": "Lars Magnus Klavenes" },
 	"plugins": [{ "name": "agent-dock", "source": "./agent-dock" }]
 }

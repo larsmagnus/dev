@@ -6,7 +6,7 @@ Splits another plugin's dock pane (filetree by default) into the host's tree on 
 
 ```sh
 claude plugin marketplace add ~/sites/dev/.claude/mods
-claude plugin install agent-dock@larsmagnus-mods --scope user
+claude plugin install agent-dock@larsmagnus --scope user
 ```
 
 Edits apply with `/reload-plugins`. No reinstall needed.

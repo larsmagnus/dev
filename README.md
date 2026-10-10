@@ -50,6 +50,16 @@ Make them easy and predictable to use for humans and agents.
 - [docs](.claude/skills/docs/SKILL.md)
 - [feedback-loop](.claude/skills/feedback-loop/SKILL.md)
 
+### Mods
+
+Change Claude's own interface. Shipped as the [larsmagnus](.claude/mods/.claude-plugin/marketplace.json) plugin marketplace.
+
+- [agent-dock](.claude/mods/agent-dock/README.md) - Live subagents beside your files in a resizable dock pane
+
+### Themes
+
+- [dark-terminal-dock](.claude/themes/dark-terminal-dock.json) - Dark base tuned to match the terminal dock
+
 ---
 
 ### Symlinks
