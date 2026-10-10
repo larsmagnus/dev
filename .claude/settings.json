@@ -76,6 +76,37 @@
 		"command": "input=$(cat); model=$(echo \"$input\" | jq -r '.model.display_name'); cwd=$(echo \"$input\" | jq -r '.workspace.current_dir'); git_branch=$(cd \"$cwd\" && git branch --show-current 2>/dev/null || echo 'no-git'); printf '\\033[2m%s@%s\\033[0m:\\033[2m%s\\033[0m \\033[2m(%s)\\033[0m \\033[2m[%s]\\033[0m' \"$(whoami)\" \"$(hostname -s)\" \"$(basename \"$cwd\")\" \"$git_branch\" \"$model\""
 	},
 	"enabledPlugins": {
-		"mattpocock-skills@claude-plugins-official": true
-	}
+		"agent-dock@larsmagnus-mods": true,
+		"mattpocock-skills@claude-plugins-official": true,
+		"typescript-lsp@claude-plugins-official": true,
+		"filetree@claude-code-filetree": true,
+		"context7@anthropic-plugin-directory": true,
+		"skill-creator@anthropic-plugin-directory": true,
+		"claude-md-management@anthropic-plugin-directory": true
+	},
+	"extraKnownMarketplaces": {
+		"claude-code-filetree": {
+			"source": {
+				"source": "github",
+				"repo": "data-goblin/claude-code-filetree"
+			}
+		},
+		"larsmagnus-mods": {
+			"source": {
+				"source": "directory",
+				"path": "/Users/larsmagnus/sites/dev/.claude/mods"
+			}
+		}
+	},
+	"pluginConfigs": {
+		"filetree@claude-code-filetree": {
+			"options": {
+				"activity": "reads and writes",
+				"glyphs": "auto",
+				"follow": "on",
+				"column": "date"
+			}
+		}
+	},
+	"theme": "custom:dark-terminal-dock"
 }
