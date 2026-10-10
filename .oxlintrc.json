@@ -52,6 +52,16 @@
 	},
 	"overrides": [
 		{
+			"files": [".claude/mods/**"],
+			"rules": {
+				"no-restricted-imports": "off",
+				"react/jsx-key": "off",
+				"react/no-array-index-key": "off",
+				"react-perf/jsx-no-new-object-as-prop": "off",
+				"oxc/no-map-spread": "off"
+			}
+		},
+		{
 			"files": ["src/components/ui/**"],
 			"rules": {
 				"react/only-export-components": "off",

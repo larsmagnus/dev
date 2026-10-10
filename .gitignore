@@ -55,3 +55,6 @@ null*
 ## Don't commit plugin core files
 **/*obsidian/plugins/*/main.js
 **/*obsidian/plugins/*/styles.css
+
+# Claude Code writes these beside each loaded mod
+.claude/mods/*/.claude-plugin/types/

@@ -1,0 +1,23 @@
+{
+	"name": "agent-dock",
+	"version": "0.1.0",
+	"description": "Live subagents beside your files: splits another pane (filetree by default) or opens its own",
+	"author": {
+		"name": "Lars Magnus Klavenes"
+	},
+	"types": "./types/index.d.ts",
+	"userConfig": {
+		"hostPane": {
+			"type": "string",
+			"title": "Host pane",
+			"description": "Id of another plugin's pane to split, agents below it (filetree's is \"filetree\"). Leave empty to always use agent-dock's own pane. The host plugin must be listed after agent-dock in enabledPlugins.",
+			"default": "filetree"
+		},
+		"autoArchiveMinutes": {
+			"type": "number",
+			"title": "Auto-archive after (minutes)",
+			"description": "Finished agents collapse into the archive at the bottom of the list after this many minutes; 0 leaves archiving to you. Archived agents are never removed.",
+			"default": 20
+		}
+	}
+}
