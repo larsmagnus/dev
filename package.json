@@ -16,10 +16,20 @@
 	"homepage": "https://larsmagnus.co",
 	"scripts": {
 		"lint": "oxlint --fix && oxfmt",
-		"typecheck": "tsc --noEmit"
+		"lint:check": "oxlint && oxfmt --check",
+		"typecheck": "tsc --noEmit",
+		"complexity": "fta . --config-path fta.json && fta .claude --config-path fta.json",
+		"duplication": "jscpd -c .jscpd.json",
+		"duplication:check": "jscpd -c .jscpd.json --reporters console,json --threshold 3",
+		"verify": "pnpm lint && pnpm complexity && pnpm duplication && pnpm knip",
+		"verify:check": "pnpm lint:check && pnpm complexity && pnpm duplication:check && pnpm knip",
+		"knip": "knip",
+		"test": "claude plugin test .claude/mods/agent-dock"
 	},
 	"devDependencies": {
 		"@types/node": "26.6.4",
+		"knip": "6.41.0",
+		"lefthook": "2.2.1",
 		"oxfmt": "0.72.0",
 		"oxlint": "1.87.0",
 		"oxlint-tsgolint": "7.0.2003",

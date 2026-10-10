@@ -37,7 +37,7 @@ export const parseDividerMessage = (data: unknown) => {
 }
 
 /** The pane's props as the host should see them: its body cut to the tree's rows, so it lays itself out for the room it really has. */
-export const withTreeRows = <P extends { scroll?: { bodyRows: number } }>(
+const withTreeRows = <P extends { scroll?: { bodyRows: number } }>(
 	props: P,
 	treeRows: number
 ): P =>

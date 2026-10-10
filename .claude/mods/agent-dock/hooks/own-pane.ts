@@ -1,6 +1,6 @@
 const HOST_GRACE_MS = 3000
 
-export const DEFAULT_HOST_PANE = 'filetree'
+const DEFAULT_HOST_PANE = 'filetree'
 
 let hostPane = DEFAULT_HOST_PANE
 let loadedAt = 0

@@ -1,0 +1,13 @@
+pre-commit:
+  jobs:
+    - name: lint
+      run: pnpm lint
+      stage_fixed: true
+
+pre-push:
+  parallel: true
+  jobs:
+    - name: test
+      run: pnpm test
+    - name: verify
+      run: pnpm verify:check

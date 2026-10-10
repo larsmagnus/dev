@@ -1,0 +1,5 @@
+{
+	"score_cap": 50,
+	"exclude_directories": ["/node_modules", "/components/ui"],
+	"exclude_filenames": ["*.test.*", "*.d.ts", "register.tsx"]
+}

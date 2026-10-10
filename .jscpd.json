@@ -1,0 +1,16 @@
+{
+	"path": ["."],
+	"format": ["typescript", "tsx", "javascript", "jsx", "css"],
+	"minLines": 5,
+	"minTokens": 20,
+	"ignorePattern": ["^\\s*import\\s.*"],
+	"ignore": [
+		"**/node_modules/**",
+		"**/components/ui/**",
+		"**/*.stories.*",
+		"**/*.test.*"
+	],
+	"reporters": ["console"],
+	"output": "report",
+	"gitignore": true
+}

@@ -1,0 +1,20 @@
+{
+	"$schema": "https://unpkg.com/knip@6/schema.json",
+	"entry": [
+		"**/*.test.{ts,tsx}",
+		".claude/mods/*/tests/*.test.{ts,tsx}",
+		// Claude Code runs these directly, nothing imports them.
+		".claude/hooks/*/index.mts",
+		".claude/agents/**/scripts/*.ts",
+		// Mod modules are loaded by path from JSX, never imported.
+		".claude/mods/*/hooks/*.tsx",
+	],
+	// Provided by the Claude Code runtime, not installable.
+	"ignoreDependencies": ["claude-code"],
+	"ignoreIssues": {
+		// shadcn/ui primitives, re-exports the primitive's surface,
+		// whether or not this app uses all of it,
+		// so that `pnpm dlx shadcn add` stays a clean overwrite.
+		"src/components/ui/**": ["exports", "types"],
+	},
+}
