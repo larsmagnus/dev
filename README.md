@@ -55,6 +55,7 @@ Make them easy and predictable to use for humans and agents.
 Change Claude's own interface. Shipped as the [larsmagnus](.claude/mods/.claude-plugin/marketplace.json) plugin marketplace.
 
 - [agent-dock](.claude/mods/agent-dock/README.md) - Live subagents beside your files in a resizable dock pane
+- [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, saved with thumbnails and refs to re-insert
 
 ### Themes
 
