@@ -82,7 +82,8 @@
 		"filetree@claude-code-filetree": true,
 		"context7@anthropic-plugin-directory": true,
 		"skill-creator@anthropic-plugin-directory": true,
-		"claude-md-management@anthropic-plugin-directory": true
+		"claude-md-management@anthropic-plugin-directory": true,
+		"attachments@larsmagnus": true
 	},
 	"extraKnownMarketplaces": {
 		"claude-code-filetree": {
