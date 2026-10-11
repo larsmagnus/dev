@@ -24,7 +24,7 @@
 		"verify": "pnpm lint && pnpm complexity && pnpm duplication && pnpm knip",
 		"verify:check": "pnpm lint:check && pnpm complexity && pnpm duplication:check && pnpm knip",
 		"knip": "knip",
-		"test": "claude plugin test .claude/mods/agent-dock"
+		"test": "claude plugin test .claude/mods/agent-dock && claude plugin test .claude/mods/attachments"
 	},
 	"devDependencies": {
 		"@types/node": "26.6.4",
