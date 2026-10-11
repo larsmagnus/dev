@@ -4,21 +4,21 @@
 
 ## Principles
 
-- Favor simplicity over cleverness, deletion over addition
+- Favour simplicity over cleverness, deletion over addition
 - Be efficient, not careless. The best code is the code never written
-- For code, favor readability over brevity. For text, nothing, then absolute terseness
-- Favor functional code, early returns and shallow nesting
-- Favor self-documenting code over standalone docs and inline comments
+- For code, favour readability over brevity. For text, nothing, then absolute terseness
+- Favour functional code, early returns and shallow nesting
+- Favour self-documenting code over standalone docs and inline comments
 - Take accountability and fix preexisting issues that overlap with your work
-- Favor strict, typesafe code and use zod to validate unknown inputs
-- Favor DRY code, but not at the expense of DX, simplicity and pragmatism
-- Favor the idiomatic approach for the language and framework
+- Favour strict, typesafe code and use zod to validate unknown inputs
+- Favour DRY code, but not at the expense of DX, simplicity and pragmatism
+- Favour the idiomatic approach for the language and framework
 - Match the patterns and code style of the existing code
 
 ### Rules
 
 - No abstractions that weren't explicitly requested
-- No new dependency if it can be avoided
+- No new dependency if avoidable
 - No boilerplate nobody asked for
 - Shortest working diff wins, but only once you understand the problem. The smallest change in the wrong place isn't efficient, it's a second bug
 - Question complex requests or pre-existing norms: "Do you actually need X, or does Y cover it?"
@@ -45,9 +45,9 @@
 ### Docs (standalone)
 
 - Code is the truth, docs are rationale - docs can't be executed or tested and quickly goes out of sync with code
-- Only consider docs when the code can't carry the why on its own - even then, docs must be well justified
+- Only consider docs when the code can't carry the why on its own. Even then, docs must be justified
 - Order of preference for docs - Whichever tier carries the point, in order of preference:
-  - Self-documenting code, a behavior-driven test, short code comment, or a terse standalone doc
+  - Self-documenting code, a behaviour-driven test, short code comment, or a terse standalone doc
 
 ### Code comments
 
@@ -60,7 +60,7 @@ Default to no comments. When you want to write a comment, make the code carry th
 ## Testing Quick Reference
 
 - Priority: Integration &gt; Browser/UI &gt; Unit tests
-- Write for humans, test behavior not implementation
+- Write for humans, test behaviour not implementation
 - Use realistic values (`user-123`), not `foo/bar/baz`
 - Keep tests WET, avoid complex abstractions
 - When a feature maps over N items, require one test per item covering all N — not representative samples
