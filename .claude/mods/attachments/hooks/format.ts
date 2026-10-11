@@ -4,7 +4,7 @@ export const THUMB_COLUMNS = 12
 export const THUMB_ROWS = 6
 
 /** Formats a byte count the way Finder does, in decimal units. */
-export const formatBytes = (bytes: number) => {
+const formatBytes = (bytes: number) => {
 	if (bytes < 1000) return `${bytes} B`
 	if (bytes < 1_000_000) return `${Math.round(bytes / 1000)} KB`
 	return `${(bytes / 1_000_000).toFixed(1)} MB`
@@ -14,7 +14,7 @@ export const formatBytes = (bytes: number) => {
 const pad = (value: number) => String(value).padStart(2, '0')
 
 /** Formats when an attachment was added as a local 24-hour time. */
-export const formatTime = (at: number) => {
+const formatTime = (at: number) => {
 	const date = new Date(at)
 
 	return `${pad(date.getHours())}:${pad(date.getMinutes())}`
