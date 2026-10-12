@@ -30,10 +30,16 @@ function world(
 	agents: AgentInfo[],
 	transcripts: Record<string, SessionMessage[]> = {}
 ) {
+	mock.env(on, { HOME: '/Users/ada' })
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
 	mock.store(on)
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
+	on('session.id', () => ({ value: 'session-4f2a9c' }))
+	on('session.root', () => ({ value: '/work/punchdown' }))
+	on('fs.read', (_$, e) => {
+		throw new Error(`ENOENT: ${e.path}`)
+	})
 	on('agent.spawn', (_$, e) => {
 		const id = `agent-${agents.length + 1}`
 		agents.push({
@@ -170,11 +176,10 @@ test('should show type, description, status and elapsed time after an Agent spaw
 
 	expect(drawn).toContain(FILETREE_TEXT)
 	expect(drawn).toContain('Agents (1 running, 1 total)')
-	expect(drawn).toContain('Explore')
 	expect(drawn).toContain('Find auth callers')
-	expect(drawn).toContain('running')
-	expect(drawn).toContain('running')
-	expect(drawn).toContain('3s')
+	expect((await ui.find({ key: 'open:agent-1' }))?.text).toMatch(
+		/Explore\s+running\s+\(3s\)/
+	)
 	await ui.unmount()
 })
 

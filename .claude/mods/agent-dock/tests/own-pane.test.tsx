@@ -18,6 +18,7 @@ function world(on: On, agents: AgentInfo[]) {
 	const opened: string[] = []
 	mock.store(on)
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
+	on('session.id', () => ({ value: 'session-4f2a9c' }))
 	on('agent.list', () => ({ value: agents }))
 	on('ui.open', (_$, e) => {
 		opened.push(e.id)

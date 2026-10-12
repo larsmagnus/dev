@@ -15,6 +15,7 @@ function world(on: On, agents: AgentInfo[]) {
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
 	mock.store(on)
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
+	on('session.id', () => ({ value: 'session-4f2a9c' }))
 	on('agent.list', () => ({ value: agents }))
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('ui.open', () => ({ value: { isPlaced: true } }))
@@ -127,14 +128,13 @@ test('should move a finished agent that runs again to the top and restart its el
 	expect(restarted.indexOf('Find auth callers')).toBeLessThan(
 		restarted.indexOf('Outline the migration')
 	)
-	const header = (await ui.find({ key: 'open:agent-1' }))?.text
-	expect(header).toContain('running')
-	expect(header).toContain('1s')
-	expect(header).not.toContain('completed (2s)')
+	expect((await ui.find({ key: 'open:agent-1' }))?.text).toContain(
+		'running (1s)'
+	)
 	await ui.unmount()
 })
 
-test('should put the status right after the type in the row header', async ($, on) => {
+test('should draw the type, then the status, then the elapsed time on the title row', async ($, on) => {
 	const agents: AgentInfo[] = [
 		{
 			id: 'agent-1',
@@ -150,9 +150,9 @@ test('should put the status right after the type in the row header', async ($, o
 	await clock.advance(1000)
 
 	const ui = await mountHost($)
-	const header = (await ui.find({ key: 'open:agent-1' }))?.text
+	const title = await ui.find({ key: 'open:agent-1' })
 
-	expect(header).toMatch(/Explore\s+running\s+\(2s\)\s+Find auth callers/)
+	expect(title?.text).toMatch(/Explore\s+running\s+\(2s\)/)
 	await ui.unmount()
 })
 

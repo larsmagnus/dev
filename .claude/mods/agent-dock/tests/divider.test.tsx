@@ -37,6 +37,7 @@ function world(
 	})
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
+	on('session.id', () => ({ value: 'session-4f2a9c' }))
 	on('agent.list', () => ({ value: agents }))
 	on('ui.open', () => ({ value: { isPlaced: true } }))
 	// Stands in for the filetree plugin, which lays out for the rows it is told it has.

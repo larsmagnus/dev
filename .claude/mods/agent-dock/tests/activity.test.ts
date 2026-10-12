@@ -3,10 +3,10 @@ import { expect, test } from 'claude-code/testing'
 import {
 	addRow,
 	describeCall,
-	formatElapsed,
 	MAX_AGENTS,
 	withActivity,
 } from '../hooks/activity'
+import { formatElapsed, formatTokens, frontmatterColor } from '../hooks/format'
 
 test('formatElapsed should show seconds, minutes and hours at their boundaries', () => {
 	expect(formatElapsed(42_000)).toBe('42s')
@@ -82,4 +82,55 @@ test('addRow should ignore an agent it already knows and cap the list', () => {
 	).reduce((rows, id) => addRow(rows, { ...base, id }), once.slice(0, 0))
 	expect(many).toHaveLength(MAX_AGENTS)
 	expect(many.at(-1)?.id).toBe(`agent-${MAX_AGENTS + 2}`)
+})
+
+const colorNames = {
+	red: '#e06c75',
+	blue: '#61afef',
+	green: '#98c379',
+	yellow: '#e5c07b',
+	purple: '#c678dd',
+	orange: '#d19a66',
+	pink: '#f78fb3',
+	cyan: '#56b6c2',
+} as const
+
+for (const [name, hex] of Object.entries(colorNames)) {
+	test(`frontmatterColor should read the name ${name} as ${hex}`, () => {
+		const markdown = `---\nname: code-reviewer\ncolor: ${name}\n---\nReview the diff.`
+
+		expect(frontmatterColor(markdown)).toBe(hex)
+	})
+}
+
+test('frontmatterColor should read a #rrggbb value, quoted or not, in any case', () => {
+	expect(frontmatterColor('---\ncolor: #FF8800\n---\n')).toBe('#ff8800')
+	expect(frontmatterColor('---\ncolor: "#ff8800"\n---\n')).toBe('#ff8800')
+	expect(frontmatterColor("---\ncolor: '#ff8800'\n---\n")).toBe('#ff8800')
+})
+
+test('frontmatterColor should read a colour name in any case and with CRLF line ends', () => {
+	expect(frontmatterColor('---\r\ncolor: Green\r\n---\r\nBody')).toBe('#98c379')
+})
+
+test('frontmatterColor should return nothing for an unknown name, a short hex or no colour line', () => {
+	expect(frontmatterColor('---\ncolor: chartreuse\n---\n')).toBeUndefined()
+	expect(frontmatterColor('---\ncolor: #f80\n---\n')).toBeUndefined()
+	expect(frontmatterColor('---\nname: code-reviewer\n---\n')).toBeUndefined()
+})
+
+test('frontmatterColor should ignore a colour line outside the frontmatter', () => {
+	expect(frontmatterColor('# Notes\ncolor: red\n')).toBeUndefined()
+	expect(frontmatterColor('---\nname: x\n---\ncolor: red\n')).toBeUndefined()
+})
+
+test('formatTokens should show plain counts below 1000, then k, then m', () => {
+	expect(formatTokens(0)).toBe('0')
+	expect(formatTokens(842)).toBe('842')
+	expect(formatTokens(999)).toBe('999')
+	expect(formatTokens(1000)).toBe('1k')
+	expect(formatTokens(12_400)).toBe('12.4k')
+	expect(formatTokens(150_000)).toBe('150k')
+	expect(formatTokens(1_000_000)).toBe('1m')
+	expect(formatTokens(1_200_000)).toBe('1.2m')
 })

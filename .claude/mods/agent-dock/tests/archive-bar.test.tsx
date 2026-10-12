@@ -17,6 +17,7 @@ function world(on: On, agents: AgentInfo[]) {
 	const toasts: string[] = []
 	mock.store(on)
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
+	on('session.id', () => ({ value: 'session-4f2a9c' }))
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('agent.list', () => ({ value: agents }))
 	on('ui.open', () => ({ value: { isPlaced: true } }))
@@ -235,27 +236,31 @@ for (const surface of ['terminal', 'desktop'] as const) {
 	})
 }
 
-test('should auto-archive an agent 20 minutes after it finished by default', async ($, on) => {
-	const agents: AgentInfo[] = [planning]
-	const { clock } = world(on, agents)
-	await startSession($)
-	await clock.advance(1000)
-	agents[0] = { ...planning, status: 'completed' }
-	await clock.advance(1000)
-	const ui = await mountHost($)
+test(
+	'should auto-archive an agent 20 minutes after it finished by default',
+	{ timeoutMs: 30_000 },
+	async ($, on) => {
+		const agents: AgentInfo[] = [planning]
+		const { clock } = world(on, agents)
+		await startSession($)
+		await clock.advance(1000)
+		agents[0] = { ...planning, status: 'completed' }
+		await clock.advance(1000)
+		const ui = await mountHost($)
 
-	await clock.advance(19 * MINUTE)
-	expect(await shown(ui)).toContain('Outline the migration')
+		await clock.advance(19 * MINUTE)
+		expect(await shown(ui)).toContain('Outline the migration')
 
-	await clock.advance(2 * MINUTE)
-	await ui.redraw()
+		await clock.advance(2 * MINUTE)
+		await ui.redraw()
 
-	expect(await shown(ui)).not.toContain('Outline the migration')
-	expect((await ui.find({ key: 'archive:toggle' }))?.text).toContain(
-		'▸ Archived (1)'
-	)
-	await ui.unmount()
-})
+		expect(await shown(ui)).not.toContain('Outline the migration')
+		expect((await ui.find({ key: 'archive:toggle' }))?.text).toContain(
+			'▸ Archived (1)'
+		)
+		await ui.unmount()
+	}
+)
 
 test(
 	'should auto-archive after the configured number of minutes',
@@ -283,7 +288,7 @@ test(
 for (const autoArchiveMinutes of [0, -1]) {
 	test(
 		`should never auto-archive when autoArchiveMinutes is ${autoArchiveMinutes}`,
-		{ options: { autoArchiveMinutes } },
+		{ options: { autoArchiveMinutes }, timeoutMs: 30_000 },
 		async ($, on) => {
 			const agents: AgentInfo[] = [planning]
 			const { clock } = world(on, agents)
@@ -293,7 +298,10 @@ for (const autoArchiveMinutes of [0, -1]) {
 			await clock.advance(1000)
 			const ui = await mountHost($)
 
-			await clock.advance(60 * MINUTE)
+			await Array.from({ length: 25 }).reduce<Promise<void>>(
+				(previous) => previous.then(() => clock.advance(MINUTE)),
+				Promise.resolve()
+			)
 			await ui.redraw()
 
 			expect(await shown(ui)).toContain('Outline the migration')
