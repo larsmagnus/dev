@@ -1,11 +1,14 @@
 import type { AgentRow } from '../types'
 
-import { TOOL_MARK } from './activity'
+import { clipTitle } from './activity'
 import type { DockElements } from './elements'
+import { drawScrollbar } from './scrollbar'
+import { transcriptRows } from './transcript-rows'
 
 export type TranscriptViewProps = {
 	ui: DockElements
 	row: AgentRow
+	now: number
 	lines: string[]
 	offset: number
 	visibleRows: number
@@ -13,26 +16,11 @@ export type TranscriptViewProps = {
 	select: (id: string | null) => () => void
 }
 
-/** The newest lines that fit `rows` once each wraps at `columns`, so the tail is never pushed out of view. */
-const tailThatFits = (lines: string[], rows: number, columns: number) => {
-	const height = (line: string) =>
-		Math.max(1, Math.ceil(line.length / Math.max(1, columns)))
-	const kept: string[] = []
-	for (
-		let used = 0, at = lines.length - 1;
-		at >= 0 && used + height(lines[at] ?? '') <= rows;
-		at -= 1
-	) {
-		used += height(lines[at] ?? '')
-		kept.unshift(lines[at] ?? '')
-	}
-	return kept
-}
-
-/** Shows an agent's transcript under a back button, ending `offset` lines above its newest, each line wrapped. */
+/** Shows what an agent or shell is, then its transcript, as one run of rows under a back button; the run ends `offset` rows above its newest. */
 export const drawTranscript = ({
 	ui,
 	row,
+	now,
 	lines,
 	offset,
 	visibleRows,
@@ -40,27 +28,38 @@ export const drawTranscript = ({
 	select,
 }: TranscriptViewProps) => {
 	const { Box, Text, Button } = ui
+	const all = transcriptRows(row, lines, now, columns)
+	const hiddenAbove = Math.max(0, all.length - visibleRows)
+	const end = all.length - Math.min(offset, hiddenAbove)
 
 	return (
-		<Box flexDirection="column">
+		<Box flexDirection="column" flexGrow={1} overflow="hidden">
 			<Button key="back" plain onPress={select(null)}>
 				<Text color={row.color} bold>
-					← {row.type}
+					← {clipTitle(row.type)}
 				</Text>
+				{row.kind === 'shell' && <Text dimColor> (shell)</Text>}
 				<Text dimColor> {row.description}</Text>
 			</Button>
-			{tailThatFits(
-				lines.slice(0, lines.length - offset),
-				visibleRows,
-				columns
-			).map((line) => (
-				<Text
-					wrap="wrap"
-					color={line.startsWith(TOOL_MARK) ? row.color : undefined}
-				>
-					{line}
-				</Text>
-			))}
+			<Box flexDirection="row">
+				<Box flexDirection="column" flexGrow={1}>
+					{all.slice(Math.max(0, end - visibleRows), end).map((shown) => (
+						<Text
+							wrap="truncate-end"
+							dimColor={shown.isDim}
+							color={shown.color}
+						>
+							{shown.text}
+						</Text>
+					))}
+				</Box>
+				{drawScrollbar({
+					ui,
+					total: all.length,
+					visible: visibleRows,
+					start: end - visibleRows,
+				})}
+			</Box>
 		</Box>
 	)
 }

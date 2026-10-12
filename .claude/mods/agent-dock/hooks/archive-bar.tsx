@@ -9,6 +9,10 @@ export type ArchiveControls = {
 	archiveFinished: () => void
 }
 
+/** The rows the archive bar takes under the list: none when there is nothing to archive or show, else its margin and its row. */
+export const archiveBarRows = (rows: AgentRow[]) =>
+	rows.some((row) => row.isArchived || FINISHED.has(row.status)) ? 2 : 0
+
 /** The row pinned under the agent list: the archive's count, which opens and closes it, and a control to archive every finished agent. */
 export const drawArchiveBar = (
 	ui: DockElements,
@@ -23,7 +27,13 @@ export const drawArchiveBar = (
 	if (archived === 0 && finished === 0) return undefined
 
 	return (
-		<Box key="archive" flexDirection="row" justifyContent="space-between">
+		<Box
+			key="archive"
+			flexDirection="row"
+			flexShrink={0}
+			justifyContent="space-between"
+			marginTop={1}
+		>
 			<Button key="archive:toggle" plain onPress={archive.toggle}>
 				<Text dimColor>
 					{archive.isOpen ? '▾' : '▸'} Archived ({archived})

@@ -1,9 +1,4 @@
-import type {
-	AgentInfo,
-	SessionMessage,
-	SessionMessagesDeny,
-	ToolCallInput,
-} from 'claude-code'
+import type { AgentInfo, ToolCallInput } from 'claude-code'
 
 import type { AgentRow } from '../types'
 
@@ -14,25 +9,11 @@ import {
 	oneLine,
 	withActivity,
 } from './activity'
+import { hasBuffered, takeText } from './buffers'
 
-// Per-chunk writes stay out of atoms so streaming does not re-render; the tick folds them into rows.
-const streamedText = new Map<string, string>()
-
-/** Buffers a subagent's streamed text until the next tick or tool call shows it. */
-export const bufferText = (agentId: string, text: string) =>
-	streamedText.set(agentId, (streamedText.get(agentId) ?? '') + text)
-
-/** Hands over everything streamed since the last tick, emptying the buffer. */
-export const drainText = () => {
-	const drained = new Map(streamedText)
-	streamedText.clear()
-
-	return drained
-}
-
-/** Whether a tick has anything to do: a live agent, text still waiting to be shown, or an agent not yet listed, finished or not. */
+/** Whether a tick has anything to do: a live agent or shell, text or an ending still waiting to be shown, or an agent not yet listed, finished or not. */
 export const hasWork = (rows: AgentRow[], listed: AgentInfo[]) =>
-	streamedText.size > 0 ||
+	hasBuffered() ||
 	[...rows, ...listed].some((agent) => !FINISHED.has(agent.status)) ||
 	listed.some((info) => !rows.some((row) => row.id === info.id))
 
@@ -40,13 +21,16 @@ export const hasWork = (rows: AgentRow[], listed: AgentInfo[]) =>
 export const withSpawn = (
 	rows: AgentRow[],
 	agentId: string,
-	spawn: { subagentType: string; description: string },
-	startedAt: number
+	spawn: { subagentType: string; description: string; prompt: string },
+	startedAt: number,
+	color?: string
 ) =>
 	addRow(rows, {
 		id: agentId,
 		type: spawn.subagentType,
 		description: spawn.description,
+		prompt: oneLine(spawn.prompt),
+		color,
 		status: 'running',
 		startedAt,
 	})
@@ -57,8 +41,7 @@ export const withToolCall = (
 	agentId: string,
 	e: ToolCallInput
 ) => {
-	const text = oneLine(streamedText.get(agentId) ?? '')
-	streamedText.delete(agentId)
+	const text = oneLine(takeText(agentId))
 	const withText = (recent: string[]) =>
 		text ? withActivity(recent, text) : recent
 
@@ -72,19 +55,34 @@ export const withToolCall = (
 	)
 }
 
-/** Folds the engine's agent list and the drained text into the rows; an agent that runs again after finishing starts over as the newest. */
+/** Folds the engine's agent list, the drained text and ended tasks into the rows; an agent that runs again after finishing starts over as the newest. */
 export const foldTick = (
 	rows: AgentRow[],
 	listed: AgentInfo[],
-	drained: Map<string, string>,
+	drained: {
+		text: Map<string, string>
+		ended: Map<string, string>
+		context: Map<string, number>
+	},
 	at: number
 ) =>
 	listed
 		.reduce((acc, info) => addRow(acc, { ...info, startedAt: at }), rows)
 		.map((row) => {
-			const status =
-				listed.find((info) => info.id === row.id)?.status ?? row.status
-			const text = oneLine(drained.get(row.id) ?? '')
+			const statusOf = (id: string) =>
+				listed.find((info) => info.id === id)?.status ??
+				drained.ended.get(id) ??
+				rows.find((known) => known.id === id)?.status
+			const reported = statusOf(row.id) ?? row.status
+			// A subagent's shell is ended with it and no notification follows, so the owner finishing is the only word.
+			const ownerStatus = row.ownerId ? statusOf(row.ownerId) : undefined
+			const isOrphaned =
+				ownerStatus !== undefined &&
+				FINISHED.has(ownerStatus) &&
+				!FINISHED.has(reported)
+			const status = isOrphaned ? 'killed' : reported
+			const text = oneLine(drained.text.get(row.id) ?? '')
+			const context = drained.context.get(row.id)
 			const isRestarted = FINISHED.has(row.status) && !FINISHED.has(status)
 
 			return {
@@ -96,19 +94,7 @@ export const foldTick = (
 					? undefined
 					: (row.endedAt ?? (FINISHED.has(status) ? at : undefined)),
 				recent: text ? withActivity(row.recent, text) : row.recent,
+				contextTokens: context ?? row.contextTokens,
 			}
 		})
 		.toSorted((a, b) => a.startedAt - b.startedAt)
-
-/** Turns an agent's transcript into the lines the pane shows: its prose and its tool calls. */
-export const transcriptLines = (
-	found: SessionMessage[] | SessionMessagesDeny
-) =>
-	'deny' in found
-		? [`Transcript unavailable: ${found.deny}`]
-		: found.flatMap((message) => [
-				...(message.role === 'assistant' && message.text
-					? [oneLine(message.text)]
-					: []),
-				...message.toolUses.map((use) => describeCall(use.tool, use.input)),
-			])

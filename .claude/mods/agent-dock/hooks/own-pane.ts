@@ -43,3 +43,13 @@ export const paneSize = (props: {
 	bodyRows: props.scroll?.bodyRows ?? 40,
 	bodyColumns: props.bodyColumns,
 })
+
+let transcriptSize = { columns: 80, visibleRows: 20 }
+
+/** Records the room the open transcript was last drawn in, so a scroll is clamped to what that draw could show. */
+export const rememberTranscriptSize = (size: typeof transcriptSize) => {
+	transcriptSize = size
+}
+
+/** The room the open transcript was last drawn in. */
+export const lastTranscriptSize = () => transcriptSize

@@ -8,6 +8,11 @@ export type AgentRow = {
 	endedAt?: number
 	recent: string[]
 	isArchived?: boolean
+	kind?: 'shell'
+	prompt?: string
+	command?: string
+	contextTokens?: number
+	ownerId?: string
 }
 
 declare module 'claude-code' {
@@ -16,6 +21,7 @@ declare module 'claude-code' {
 			agents: AgentRow[]
 			view: { selected: string | null; offset: number; isArchiveOpen?: boolean }
 			share: number
+			shimmer: number
 		}
 	}
 }

@@ -25,6 +25,19 @@ const ARG_KEYS = [
 export const MAX_AGENTS = 100
 export const FINISHED = new Set(['completed', 'failed', 'killed'])
 export const TOOL_MARK = '⏺ '
+// Indented so a diff line can never be mistaken for prose, which is trimmed to one line.
+export const DIFF_REMOVED = '  - '
+export const DIFF_ADDED = '  + '
+
+const MAX_DIFF_LINES = 10
+
+const MAX_TITLE_CHARS = 60
+
+/** Cuts a title to one short line, so a long shell command never spills over the rows around it. */
+export const clipTitle = (title: string) =>
+	title.length > MAX_TITLE_CHARS
+		? `${title.slice(0, MAX_TITLE_CHARS - 1)}…`
+		: title
 
 /** Collapses whitespace so a multi-line value fits one row. */
 export const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim()
@@ -39,15 +52,29 @@ export const describeCall = (tool: string, fields: object) => {
 	return `${TOOL_MARK}${tool.replace(/^mcp__/, '')}${arg ? `(${oneLine(arg)})` : ''}`
 }
 
-/** Formats milliseconds as `42s`, `3m 07s` or `1h 02m`. */
-export const formatElapsed = (ms: number) => {
-	const seconds = Math.max(0, Math.floor(ms / 1000))
-	if (seconds < 60) return `${seconds}s`
-	const minutes = Math.floor(seconds / 60)
-	if (minutes < 60)
-		return `${minutes}m ${String(seconds % 60).padStart(2, '0')}s`
+const field = (value: unknown, key: string): unknown =>
+	typeof value === 'object' && value !== null
+		? new Map(Object.entries(value)).get(key)
+		: undefined
 
-	return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, '0')}m`
+const diffSide = (prefix: string, text: unknown) => {
+	if (typeof text !== 'string' || text === '') return []
+	const lines = text.split('\n')
+	const shown = lines.slice(0, MAX_DIFF_LINES).map((line) => prefix + line)
+
+	return lines.length > MAX_DIFF_LINES ? [...shown, `${prefix}…`] : shown
+}
+
+/** Shows what an Edit or MultiEdit replaced and with what, as removed then added lines under each change. */
+export const describeEdits = (tool: string, input: unknown) => {
+	if (tool !== 'Edit' && tool !== 'MultiEdit') return []
+	const edits = tool === 'Edit' ? [input] : field(input, 'edits')
+	if (!Array.isArray(edits)) return []
+
+	return edits.flatMap((edit) => [
+		...diffSide(DIFF_REMOVED, field(edit, 'old_string')),
+		...diffSide(DIFF_ADDED, field(edit, 'new_string')),
+	])
 }
 
 /** Keeps the two newest activity lines; streamed text replaces its own previous line instead of stacking. */
@@ -64,7 +91,8 @@ export const withActivity = (recent: string[], line: string) => {
 /** Adds an agent the dock has not seen, colored by arrival order. */
 export const addRow = (
 	rows: AgentRow[],
-	row: Pick<AgentRow, 'id' | 'type' | 'description' | 'status' | 'startedAt'>
+	row: Pick<AgentRow, 'id' | 'type' | 'description' | 'status' | 'startedAt'> &
+		Partial<Pick<AgentRow, 'kind' | 'prompt' | 'command' | 'color' | 'ownerId'>>
 ) =>
 	rows.some((known) => known.id === row.id)
 		? rows
@@ -72,7 +100,7 @@ export const addRow = (
 				...rows,
 				{
 					...row,
-					color: COLORS[rows.length % COLORS.length] ?? '#61afef',
+					color: row.color ?? COLORS[rows.length % COLORS.length] ?? '#61afef',
 					recent: [],
 				},
 			].slice(-MAX_AGENTS)
