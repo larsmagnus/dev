@@ -1,6 +1,6 @@
 import type { AgentRow } from '../types'
 
-import { clipTitle } from './activity'
+import { rowTitle } from './activity'
 import type { DockElements } from './elements'
 import { drawScrollbar } from './scrollbar'
 import { transcriptRows } from './transcript-rows'
@@ -36,10 +36,9 @@ export const drawTranscript = ({
 		<Box flexDirection="column" flexGrow={1} overflow="hidden">
 			<Button key="back" plain onPress={select(null)}>
 				<Text color={row.color} bold>
-					← {clipTitle(row.type)}
+					← {rowTitle(row)}
 				</Text>
-				{row.kind === 'shell' && <Text dimColor> (shell)</Text>}
-				<Text dimColor> {row.description}</Text>
+				{row.description !== '' && <Text dimColor> {row.description}</Text>}
 			</Button>
 			<Box flexDirection="row">
 				<Box flexDirection="column" flexGrow={1}>

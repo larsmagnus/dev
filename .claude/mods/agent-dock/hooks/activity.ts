@@ -39,6 +39,12 @@ export const clipTitle = (title: string) =>
 		? `${title.slice(0, MAX_TITLE_CHARS - 1)}…`
 		: title
 
+export const SHELL_TITLE = 'shell'
+
+/** The title a row is listed under: a shell is always `shell`, whatever title it was stored with, and any other row its agent type. */
+export const rowTitle = (row: Pick<AgentRow, 'kind' | 'type'>) =>
+	row.kind === 'shell' ? SHELL_TITLE : clipTitle(row.type)
+
 /** Collapses whitespace so a multi-line value fits one row. */
 export const oneLine = (text: string) => text.replace(/\s+/g, ' ').trim()
 

@@ -154,8 +154,9 @@ test('should not show rows stored for another session', async ($, on) => {
 	await ui.unmount()
 })
 
-test('should clip the title of a restored shell row whose stored title is a 200-character command', async ($, on) => {
-	const command = `pnpm build && ${'rsync -az dist/ deploy@example.com:/srv/app && '.repeat(4)}echo done`
+const legacyCommand = `pnpm build && ${'rsync -az dist/ deploy@example.com:/srv/app && '.repeat(4)}echo done`
+
+test('should draw a restored legacy shell row titled shell with one command line', async ($, on) => {
 	const { clock } = world(on, {
 		sessionId: 'session-g7h8i9',
 		stored: {
@@ -163,9 +164,9 @@ test('should clip the title of a restored shell row whose stored title is a 200-
 				{
 					id: 'bash-7c1e',
 					kind: 'shell',
-					type: command.slice(0, 200),
+					type: legacyCommand.slice(0, 200),
 					description: '',
-					command,
+					command: legacyCommand,
 					status: 'running',
 					startedAt: 1_799_999_000_000,
 					recent: [],
@@ -178,12 +179,78 @@ test('should clip the title of a restored shell row whose stored title is a 200-
 	await clock.advance(1000)
 
 	const ui = await mountPane($)
-	const text = (await ui.find({ key: 'open:bash-7c1e' }))?.text ?? ''
+	const row = await ui.find({ key: 'bash-7c1e' })
+	const line = await ui.find({ type: 'Text', text: /⏺ Bash\(pnpm build/ })
 
-	const title = text.match(/^● (.*?)\s+\(shell\)/)?.[1] ?? ''
-	expect(command.slice(0, 200)).toHaveLength(200)
-	expect(title.length).toBeLessThanOrEqual(60)
-	expect(title.endsWith('…')).toBe(true)
-	expect(text).toMatch(/\(shell\)\s+killed/)
+	expect(legacyCommand.slice(0, 200)).toHaveLength(200)
+	expect((await ui.find({ key: 'open:bash-7c1e' }))?.text).toMatch(
+		/^● shell\s+killed\s+\(\d+/
+	)
+	expect(row?.children).toHaveLength(2)
+	expect(line?.text).toContain(`⏺ Bash(${legacyCommand.slice(0, 20)}`)
+	expect(line?.props.dimColor).toBe(true)
+	expect(line?.props.wrap).toBe('truncate-end')
+	await ui.unmount()
+})
+
+test('should draw a restored legacy shell row without a command as a title only', async ($, on) => {
+	const { clock } = world(on, {
+		sessionId: 'session-g7h8i9',
+		stored: {
+			'session-g7h8i9': [
+				{
+					id: 'bash-7c1e',
+					kind: 'shell',
+					type: 'tail -f logs/app.log',
+					description: '',
+					status: 'running',
+					startedAt: 1_799_999_000_000,
+					recent: [],
+					color: '#c678dd',
+				},
+			],
+		},
+	})
+	await startSession($)
+	await clock.advance(1000)
+
+	const ui = await mountPane($)
+	const row = await ui.find({ key: 'bash-7c1e' })
+
+	expect((await ui.find({ key: 'open:bash-7c1e' }))?.text).toMatch(
+		/^● shell\s+killed/
+	)
+	expect(row?.children).toHaveLength(1)
+	expect(await shown(ui)).not.toContain('⏺ Bash(')
+	await ui.unmount()
+})
+
+test('should read ← shell on the back button of an opened legacy shell row', async ($, on) => {
+	const { clock } = world(on, {
+		sessionId: 'session-g7h8i9',
+		stored: {
+			'session-g7h8i9': [
+				{
+					id: 'bash-7c1e',
+					kind: 'shell',
+					type: legacyCommand.slice(0, 200),
+					description: '',
+					command: legacyCommand,
+					status: 'running',
+					startedAt: 1_799_999_000_000,
+					recent: [],
+					color: '#c678dd',
+				},
+			],
+		},
+	})
+	await startSession($)
+	await clock.advance(1000)
+	const ui = await mountPane($)
+
+	await ui.press({ key: 'open:bash-7c1e' })
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain('← shell')
 	await ui.unmount()
 })

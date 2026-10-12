@@ -8,7 +8,7 @@ Splits another plugin's dock pane (filetree by default) into the host's tree on 
 - Description: white, one line.
 - Activity: dim, the two newest lines.
 
-A shell is a Bash command left running in the background. Its title carries `(shell)` and is its description, or its command when it has none, cut to one short line. A shell ends when its task notification arrives. When the subagent that ran it finishes first, no notification follows, so the shell is marked `killed`.
+A shell is a Bash command left running in the background. It is titled `shell`, because the engine gives no name for one; the Bash call's description, when it gave one, is the white line and the command is the dim activity line. A shell ends when its task notification arrives. When the subagent that ran it finishes first, no notification follows, so the shell is marked `killed`. A shell the engine no longer lists as in flight at the end of a turn is marked `completed`, which covers any notification that never arrived.
 
 A scrollbar sits beside the list and the transcript. Wheel ticks over the list scroll it.
 

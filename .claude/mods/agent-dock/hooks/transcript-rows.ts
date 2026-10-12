@@ -40,7 +40,7 @@ const rowDetails = (row: AgentRow, now: number) => {
 			`${row.status}${FINISHED.has(row.status) ? ' after' : ' for'} ${elapsed}`,
 		],
 		['Started', new Date(row.startedAt).toLocaleTimeString()],
-		['Task', row.kind === 'shell' ? undefined : row.prompt || row.description],
+		['Task', row.prompt || row.description],
 		['Command', row.kind === 'shell' ? row.command : undefined],
 		['Id', row.id],
 	]

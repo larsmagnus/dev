@@ -1,6 +1,6 @@
 import type { AgentRow } from '../types'
 
-import { addRow, clipTitle, oneLine } from './activity'
+import { addRow, FINISHED, oneLine, SHELL_TITLE } from './activity'
 
 /** The task id a Bash result carries when its command was left running in the background. */
 export const backgroundTaskId = (result: unknown) =>
@@ -12,7 +12,7 @@ export const backgroundTaskId = (result: unknown) =>
 		? result.backgroundTaskId
 		: undefined
 
-/** Adds a shell the Bash tool left running in the background, titled by its description, else its command cut to one short line; `ownerId` is the subagent that ran it, if any. */
+/** Adds a shell the Bash tool left running in the background: titled `shell`, described by the Bash call's own description when it gave one, its command is drawn as its activity line; `ownerId` is the subagent that ran it, if any. */
 export const withShell = (
 	rows: AgentRow[],
 	taskId: string,
@@ -24,9 +24,24 @@ export const withShell = (
 		id: taskId,
 		kind: 'shell',
 		ownerId,
-		type: clipTitle(oneLine(call.description || call.command)),
-		description: call.description ? oneLine(call.command) : '',
+		type: SHELL_TITLE,
+		description: oneLine(call.description ?? ''),
 		command: call.command,
 		status: 'running',
 		startedAt,
 	})
+
+/** The shells still marked running that the engine no longer lists as in flight, so their notification never reached the dock; a shell whose owner is still running is left to end with it. */
+export const unlistedShells = (
+	rows: AgentRow[],
+	inFlight: readonly { id: string }[]
+) =>
+	rows.filter(
+		(row) =>
+			row.kind === 'shell' &&
+			!FINISHED.has(row.status) &&
+			!inFlight.some((task) => task.id === row.id) &&
+			!rows.some(
+				(owner) => owner.id === row.ownerId && !FINISHED.has(owner.status)
+			)
+	)

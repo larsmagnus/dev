@@ -322,7 +322,7 @@ for (const [status, hex] of statusColors) {
 	})
 }
 
-test('should draw (shell) after the title of a backgrounded Bash command and not after an agent', async ($, on) => {
+test('should title a backgrounded Bash command `shell` and an agent by its type', async ($, on) => {
 	const { clock } = world(on, {
 		backgroundTaskId: 'bash-7c1e',
 		agents: [
@@ -347,8 +347,9 @@ test('should draw (shell) after the title of a backgrounded Bash command and not
 	const shell = await ui.find({ key: 'open:bash-7c1e' })
 	const agent = await ui.find({ key: 'open:agent-1' })
 
-	expect(shell?.text).toMatch(/Start the dev server\s+\(shell\)\s+running/)
-	expect(agent?.text).not.toContain('(shell)')
+	expect(shell?.text).toMatch(/^● shell\s+running/)
+	expect(shell?.text).not.toContain('(shell)')
+	expect(agent?.text).toMatch(/^● Explore\s+running/)
 	await ui.unmount()
 })
 
@@ -388,7 +389,7 @@ test('should draw the description on its own line below the title and above the 
 	await ui.unmount()
 })
 
-test('should draw no description line for a shell that has no Bash description', async ($, on) => {
+test('should draw only the command line below the title for a shell that has no Bash description', async ($, on) => {
 	const { clock } = world(on, { backgroundTaskId: 'bash-7c1e' })
 	await startSession($)
 	await $.tool.call({ tool: 'Bash', command: 'tail -f logs/app.log' })
@@ -397,12 +398,15 @@ test('should draw no description line for a shell that has no Bash description',
 	const ui = await mountPane($)
 	const row = await ui.find({ key: 'bash-7c1e' })
 
-	expect(row?.children).toHaveLength(1)
+	expect(row?.children).toHaveLength(2)
 	expect(row?.children[0]).toMatchObject({
 		type: 'Box',
 		props: { flexDirection: 'row', height: 1, overflow: 'hidden' },
 		children: [{ type: 'Button' }],
 	})
+	expect(JSON.stringify(row?.children[1])).toContain(
+		'⏺ Bash(tail -f logs/app.log)'
+	)
 	await ui.unmount()
 })
 

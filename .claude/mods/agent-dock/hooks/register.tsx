@@ -28,7 +28,7 @@ import {
 } from './own-pane'
 import { restoreRows, storedRows, withStoredRows } from './persist'
 import { SCROLLBAR_COLUMNS } from './scrollbar'
-import { backgroundTaskId, withShell } from './shells'
+import { backgroundTaskId, unlistedShells, withShell } from './shells'
 import {
 	DEFAULT_SHARE,
 	isListScroll,
@@ -81,6 +81,18 @@ const fileColorOf = async ($: EngineInterface, type: string) => {
 	return files
 		.map((markdown) => (markdown ? frontmatterColor(markdown) : undefined))
 		.find((color) => color !== undefined)
+}
+
+/** Ends shells the engine no longer lists as in flight, the only word a shell gives when its notification never arrives. */
+const endUnlistedShells = async (
+	$: EngineInterface,
+	inFlight: readonly { id: string }[] | undefined
+) => {
+	if (inFlight === undefined) return
+
+	unlistedShells(await read($, agents), inFlight).forEach((row) =>
+		bufferTaskEnd(row.id, 'completed')
+	)
 }
 
 /** Keeps the session's rows in the store, so a resumed session shows them again; the engine forgets its agents with the process. */
@@ -270,6 +282,12 @@ export const register: Register = (on, options) => {
 				bufferUsage(e.agentId, chunk.usage)
 			yield chunk
 		}
+	})
+
+	on('classic.Stop', async ($, e, next) => {
+		await endUnlistedShells($, e.background_tasks)
+
+		return next(e)
 	})
 
 	on('command.run', { command: 'agents' }, async ($) => {
