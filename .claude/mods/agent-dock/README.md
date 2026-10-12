@@ -1,36 +1,6 @@
 # agent-dock
 
-Splits another plugin's dock pane (filetree by default) into the host's tree on top and a live list of subagents and background shells below. Drag the divider to resize. The position is remembered. With no host pane open, agent-dock opens its own `Agents` pane, and `/agents` opens it on demand.
-
-## Rows
-
-- Title: `● type`, with the dot and name shimmering while the agent runs. Then the status, coloured by state, then elapsed time and `ctx` tokens of the agent's latest request.
-- Description: white, one line.
-- Activity: dim, the two newest lines.
-
-A shell is a Bash command left running in the background. It is titled `shell`, because the engine gives no name for one; the Bash call's description, when it gave one, is the white line and the command is the dim activity line. A shell ends when its task notification arrives. When the subagent that ran it finishes first, no notification follows, so the shell is marked `killed`. A shell the engine no longer lists as in flight at the end of a turn is marked `completed`, which covers any notification that never arrived.
-
-A scrollbar sits beside the list and the transcript. Wheel ticks over the list scroll it.
-
-Failed or killed agents raise a toast. Finished agents collapse into an archive and are never removed. They auto-archive after a set time.
-
-## Details
-
-Click or Enter on a row opens its details (status, started, task or command, id) and its transcript, in one scrolling run under a back button. Edits show as red `-` and green `+` lines.
-
-## Colours
-
-An agent takes the `color:` from its agent file's frontmatter. The project's `.claude/agents` is checked first, then the user's `~/.claude/agents`. Without one, it takes the next colour from a fixed palette, in arrival order.
-
-## Why
-
-- The title is a real focusable Button. Keyboard navigation is a requirement, and plain text cannot take focus.
-- The shimmer is driven by the plugin. The engine has no animation, so while anything runs the plugin steps a phase on a timer. Each step redraws the pane, and that redraws the host's tree too. The step is slow for that reason, and it only runs while a row is running.
-- There is no context %. The engine gives no context window per agent, so a percentage would be a guess. `ctx` shows the input and cache tokens of the agent's latest request instead.
-
-## Resumed sessions
-
-The engine forgets its agents with the process, so rows are kept in the plugin's store per session id, for the most recent sessions only. A resumed session restores its rows. Anything still live comes back as `killed`, since its process is gone.
+A live list of the session's subagents and background shells. It splits another plugin's pane (filetree by default), so the host's tree sits on top and the list below, with a draggable divider whose position is remembered. With no host pane open, it opens its own `Agents` pane once there is something to show. `/agents` opens that pane on demand.
 
 ## Install
 
@@ -41,16 +11,40 @@ claude plugin install agent-dock@larsmagnus --scope user
 
 Edits apply with `/reload-plugins`. No reinstall needed.
 
+## Load order
+
+agent-dock must be listed before the host plugin in `enabledPlugins`. filetree draws its pane without calling `next`, so any plugin after it never gets its `ui.render` hook. Installing or toggling plugins can reorder that list. If the split disappears, check this first.
+
+## Shells
+
+A shell is a Bash command left running in the background. The engine gives it no name, so it is listed as `shell`. It ends in one of three ways:
+
+- Its task notification arrives, and it takes the status that notification reports.
+- Its subagent finishes first. No notification follows, so it is `killed`.
+- A turn ends and the engine no longer lists it as in flight. It is `completed`, which covers a notification that never arrived. A shell whose subagent is still running is left alone.
+
+## Details
+
+Click a row, or press Enter, to open its details (status, start, task or command, id) and its transcript. A shell has details but no transcript.
+
+## Archive
+
+Finished agents collapse into an archive and are never removed. With `autoArchiveMinutes` set, they collapse on their own once they have been finished that long.
+
+## Context
+
+Rows show tokens, not a context percentage. The engine gives no context window per agent, so a percentage would be a guess.
+
+## Resumed sessions
+
+Rows are stored per session id, for the most recent sessions only. Resuming a session brings its rows back. Anything still live then comes back as `killed`, since its process is gone.
+
 ## Settings
 
 Set under agent-dock in `/config`.
 
-- `hostPane`: default `filetree`. Empty means agent-dock always uses its own pane.
-- `autoArchiveMinutes`: default `20`. `0` turns auto-archive off.
-
-## Load order
-
-agent-dock must be listed before the host plugin in `enabledPlugins`. filetree draws its pane without calling `next`, so any plugin after it never gets its `ui.render` hook. Installing or toggling plugins can reorder that list. If the split disappears, check this first.
+- `hostPane`: default `filetree`. The id of another plugin's pane to split. Empty means agent-dock always uses its own pane.
+- `autoArchiveMinutes`: default `20`. `0` turns auto-archive off, leaving archiving to you.
 
 ## Engine constraints
 
@@ -58,15 +52,14 @@ The plugin engine enforces these at load. They shape the code, so don't "fix" th
 
 - A plugin has exactly one hooks module. Here it is `hooks/register.tsx`.
 - Anything that touches `$` or a state atom must live in that module, in top-level functions. `$` cannot be passed into an imported function.
-
-`register.tsx` is excluded from the repo's complexity cap by name, since it is the wiring. All other logic lives in small files that stay under the cap.
+- `register.tsx` is excluded from the complexity cap by name, since it is the wiring. All other logic lives in small files under the cap.
 
 ## Layout limits
 
 Found by probing. A layout manager can't get past these.
 
 - Background tabs are not drawn, so two plugins' live panes can't sit side by side.
-- A host pane's height can be rewritten through `scroll.bodyRows`. That is how the host gets exactly its share.
+- A host pane's height is set through `scroll.bodyRows`. That is how agent-dock gives the host exactly its share.
 
 ## Tests
 
