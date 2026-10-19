@@ -1,6 +1,10 @@
 # agent-dock
 
-A live list of the session's subagents and background shells. It splits another plugin's pane (filetree by default), so the host's tree sits on top and the list below, with a draggable divider whose position is remembered. With no host pane open, it opens its own `Agents` pane once there is something to show. `/agents` opens that pane on demand.
+A live list of the session's subagents and background shells.
+
+![Mod panel with agent-dock](larsmagnus-agent-dock.png)
+
+If configured, it splits another host plugin's pane vertically to show agent-dock below. The vertical divider is draggable, and the position is remembered. With no host plugin open, it opens its own `Agents` pane once there is something to show. `/agents` opens that pane on demand.
 
 ## Install
 
@@ -14,6 +18,10 @@ Edits apply with `/reload-plugins`. No reinstall needed.
 ## Load order
 
 agent-dock must be listed before the host plugin in `enabledPlugins`. filetree draws its pane without calling `next`, so any plugin after it never gets its `ui.render` hook. Installing or toggling plugins can reorder that list. If the split disappears, check this first.
+
+## Layout
+
+`/agents-layout` toggles between `split` (default) and `tab`. `split` puts the list below the host pane, with a draggable divider. `tab` shows only agent-dock's own `Agents` pane and leaves the host pane untouched. The choice is kept across sessions. With `hostPane` empty, agent-dock always has its own pane, so the command does nothing but say so.
 
 ## Shells
 

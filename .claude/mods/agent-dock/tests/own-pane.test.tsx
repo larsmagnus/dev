@@ -13,16 +13,31 @@ const paneProps = {
 	view: {},
 } satisfies RenderPropsOf['Pane']
 
-function world(on: On, agents: AgentInfo[]) {
+function world(
+	on: On,
+	agents: AgentInfo[],
+	stored: Record<string, unknown> = {}
+) {
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
 	const opened: string[] = []
-	mock.store(on)
+	const closed: string[] = []
+	const saved = new Map(Object.entries(stored))
+	on('store.get', (_$, e) => ({ value: saved.get(e.key) }))
+	on('store.set', (_$, e) => {
+		saved.set(e.key, e.value)
+		return { value: undefined }
+	})
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
 	on('session.id', () => ({ value: 'session-4f2a9c' }))
 	on('agent.list', () => ({ value: agents }))
 	on('ui.open', (_$, e) => {
 		opened.push(e.id)
 		return { value: { isPlaced: true } }
+	})
+	on('command.register', (_$, e) => ({ value: { command: e.name } }))
+	on('ui.close', (_$, e) => {
+		closed.push(e.id)
+		return { value: undefined }
 	})
 	on('ui.render', { component: 'Pane', requestId: 'filetree' }, ($, e) => {
 		const { Box, Text } = $.ui.resolve(e)
@@ -40,7 +55,7 @@ function world(on: On, agents: AgentInfo[]) {
 			</Box>
 		)
 	})
-	return { clock, opened }
+	return { clock, opened, closed, saved }
 }
 
 const runningAgent = (): AgentInfo => ({
@@ -166,4 +181,116 @@ test('should draw the agent rows in the agents pane with no host tree above them
 	expect(drawn).toContain('Find auth callers')
 	expect(drawn).not.toContain(FILETREE_TEXT)
 	await ui.unmount()
+})
+
+const toggleLayout = ($: Engine) =>
+	$.command.run({
+		command: 'agents-layout',
+		args: '',
+		origin: { kind: 'composer' },
+		presentation: { isFullscreen: false, columns: 120 },
+	})
+
+test('should stop splitting the host pane and open the own pane listing the agents when toggled to tab', async ($, on) => {
+	const { clock, opened } = world(on, [runningAgent()])
+	await startSession($)
+	await clock.advance(1000)
+	const host = await mountPane($, 'filetree')
+	expect(await shown(host)).toContain('Agents (1 running, 1 total)')
+
+	const result = await toggleLayout($)
+
+	expect(result).toMatchObject({
+		text: 'Agents moved to a pane of their own.',
+	})
+	expect(opened).toEqual(['agents'])
+	const hostDrawn = await shown(host)
+	expect(hostDrawn).toContain(FILETREE_TEXT)
+	expect(hostDrawn).not.toContain('Agents (')
+	await expect(host.drawn({ in: 'divider' })).rejects.toThrow()
+	await host.unmount()
+
+	const own = await mountPane($, 'agents')
+	const ownDrawn = await shown(own)
+	expect(ownDrawn).toContain('Agents (1 running, 1 total)')
+	expect(ownDrawn).toContain('Find auth callers')
+	await own.unmount()
+})
+
+test('should restore the split and close the own pane when toggled back', async ($, on) => {
+	const { clock, closed } = world(on, [runningAgent()])
+	await startSession($)
+	await clock.advance(1000)
+	await toggleLayout($)
+
+	const result = await toggleLayout($)
+
+	expect(result).toMatchObject({
+		text: 'Agents split into the filetree pane.',
+	})
+	expect(closed).toEqual(['agents'])
+	const host = await mountPane($, 'filetree')
+	const drawn = await shown(host)
+	expect(drawn).toContain(FILETREE_TEXT)
+	expect(drawn).toContain('Agents (1 running, 1 total)')
+	await host.unmount()
+})
+
+test('should save the chosen layout in the store on each toggle', async ($, on) => {
+	const { clock, saved } = world(on, [runningAgent()])
+	await startSession($)
+	await clock.advance(1000)
+
+	await toggleLayout($)
+	expect(saved.get('layout')).toBe('tab')
+
+	await toggleLayout($)
+	expect(saved.get('layout')).toBe('split')
+})
+
+test('should start a fresh session in tab layout from the stored choice', async ($, on) => {
+	const { clock } = world(on, [runningAgent()], { layout: 'tab' })
+	await startSession($)
+	await clock.advance(1000)
+
+	const host = await mountPane($, 'filetree')
+	const drawn = await shown(host)
+
+	expect(drawn).toContain(FILETREE_TEXT)
+	expect(drawn).not.toContain('Agents (')
+	await host.unmount()
+})
+
+test(
+	'should change nothing and say no host pane is set when toggled with hostPane empty',
+	{ options: { hostPane: '' } },
+	async ($, on) => {
+		const { clock, opened, closed, saved } = world(on, [])
+		await startSession($)
+		await clock.settle()
+
+		const result = await toggleLayout($)
+
+		expect(result).toMatchObject({
+			text: expect.stringContaining('No host pane is set'),
+		})
+		expect(opened).toEqual([])
+		expect(closed).toEqual([])
+		expect(saved.has('layout')).toBe(false)
+	}
+)
+
+test('should offer the own pane once without the grace period in tab layout even when the host pane is drawn', async ($, on) => {
+	const { clock, opened } = world(on, [runningAgent()], { layout: 'tab' })
+	await startSession($)
+	const host = await mountPane($, 'filetree')
+
+	await clock.advance(1000)
+	expect(opened).toEqual(['agents'])
+
+	await clock.advance(1000)
+	await clock.advance(1000)
+	await clock.advance(1000)
+	expect(opened).toEqual(['agents'])
+	await host.unmount()
 })

@@ -34,7 +34,7 @@ const MAX_DIFF_LINES = 10
 const MAX_TITLE_CHARS = 60
 
 /** Cuts a title to one short line, so a long shell command never spills over the rows around it. */
-export const clipTitle = (title: string) =>
+const clipTitle = (title: string) =>
 	title.length > MAX_TITLE_CHARS
 		? `${title.slice(0, MAX_TITLE_CHARS - 1)}…`
 		: title

@@ -19,11 +19,13 @@ import { foldTick, hasWork, withSpawn, withToolCall } from './feed'
 import { frontmatterColor } from './format'
 import {
 	claimOwnPaneOffer,
+	hasHostPane,
 	lastTranscriptSize,
 	markHostDrawn,
 	markLoaded,
 	paneSize,
 	rememberTranscriptSize,
+	resetOwnPaneOffer,
 	setHostPane,
 } from './own-pane'
 import { restoreRows, storedRows, withStoredRows } from './persist'
@@ -52,15 +54,21 @@ const share = atom(
 	DEFAULT_SHARE
 )
 const shimmer = atom({ plugin: 'agent-dock', key: 'shimmer' } as const, 0)
+const layout = atom({ plugin: 'agent-dock', key: 'layout' } as const, 'split')
 
 const OWN_PANE = 'agents'
 const TICK_MS = 1000
 // Redrawing the pane per frame also redraws the host's tree, so the shimmer steps slowly.
 const SHIMMER_MS = 150
 const STORE_KEY = 'sessions'
+const LAYOUT_KEY = 'layout'
 
 let sessionId = ''
 let persisted = ''
+
+/** Whether agent-dock shows in a pane of its own: by choice, or because no host pane is configured. */
+const isTabLayout = async ($: EngineInterface) =>
+	!hasHostPane() || (await read($, layout)) === 'tab'
 
 /** Opens agent-dock's own pane, swallowing a refusal: an unplaced pane is the person's to open with `/agents`. */
 const openOwnPane = ($: EngineInterface) =>
@@ -114,7 +122,8 @@ const pulse = async ($: EngineInterface) => {
 	const rows = await read($, agents)
 	const at = await $.clock.now()
 	if (!hasWork(rows, listed) && !hasPendingArchive(rows)) {
-		if (rows.length > 0 && claimOwnPaneOffer(at)) await openOwnPane($)
+		if (rows.length > 0 && claimOwnPaneOffer(at, await isTabLayout($)))
+			await openOwnPane($)
 		return
 	}
 
@@ -126,7 +135,7 @@ const pulse = async ($: EngineInterface) => {
 		autoArchive(foldTick(current, listed, drained, at), at)
 	)
 	await persistRows($)
-	if (claimOwnPaneOffer(at)) await openOwnPane($)
+	if (claimOwnPaneOffer(at, await isTabLayout($))) await openOwnPane($)
 }
 
 /** Advances the shimmer one step while any agent is running; a pane with none running is left alone. */
@@ -218,11 +227,18 @@ export const register: Register = (on, options) => {
 			)
 			await update($, agents, () => restored)
 		}
+		const storedLayout = await $.store.get(LAYOUT_KEY)
+		await update($, layout, () => (storedLayout === 'tab' ? 'tab' : 'split'))
 		$.clock.every(TICK_MS, () => void pulse($))
 		$.clock.every(SHIMMER_MS, () => void shimmerStep($))
 		await $.command.register({
 			name: 'agents',
 			description: "Open agent-dock's own pane of this session's subagents",
+		})
+		await $.command.register({
+			name: 'agents-layout',
+			description:
+				'Toggle agent-dock between a split in the host pane and a pane of its own',
 		})
 
 		return next(e)
@@ -296,6 +312,25 @@ export const register: Register = (on, options) => {
 		return { text: 'Agents pane opened.' }
 	})
 
+	on('command.run', { command: 'agents-layout' }, async ($) => {
+		if (!hasHostPane())
+			return {
+				text: 'No host pane is set, so agents always have their own pane.',
+			}
+
+		const next = (await read($, layout)) === 'tab' ? 'split' : 'tab'
+		await update($, layout, () => next)
+		await $.store.set(LAYOUT_KEY, next)
+		if (next === 'split') {
+			await $.ui.close({ id: OWN_PANE }).catch(() => undefined)
+			return { text: `Agents split into the ${hostPane} pane.` }
+		}
+
+		resetOwnPaneOffer()
+		await openOwnPane($)
+		return { text: 'Agents moved to a pane of their own.' }
+	})
+
 	on('ui.message', async ($, e, next) => {
 		const message =
 			e.element === 'divider' ? parseDividerMessage(e.data) : undefined
@@ -346,7 +381,8 @@ export const register: Register = (on, options) => {
 		)
 			return next(e)
 		if (isOwn) return drawAgents($, e)
-		if ((await read($, agents)).length === 0) return next(e)
+		if ((await isTabLayout($)) || (await read($, agents)).length === 0)
+			return next(e)
 
 		const { treeRows, props } = splitProps(e.props, await read($, share))
 		return drawAgents($, e, await next({ ...e, props }), treeRows)

@@ -14,6 +14,9 @@ export const setHostPane = (option: unknown) => {
 	return hostPane
 }
 
+/** Whether a host pane is configured to split at all; without one agent-dock lives in its own pane. */
+export const hasHostPane = () => hostPane !== ''
+
 /** Starts a session's grace period for the host pane to draw, before agent-dock opens its own. */
 export const markLoaded = (at: number) => {
 	loadedAt = at
@@ -26,13 +29,19 @@ export const markHostDrawn = () => {
 	isHostDrawn = true
 }
 
-/** Claims the one automatic opening of agent-dock's own pane, once the host pane has missed its grace period. */
-export const claimOwnPaneOffer = (at: number) => {
-	const isHostOverdue = hostPane === '' || at - loadedAt >= HOST_GRACE_MS
-	if (isOffered || isHostDrawn || !isHostOverdue) return false
+/** Claims the one automatic opening of agent-dock's own pane: at once when it lives in a tab, else once the host pane has missed its grace period. */
+export const claimOwnPaneOffer = (at: number, isTab: boolean) => {
+	const isHostOverdue = isTab || at - loadedAt >= HOST_GRACE_MS
+	const isHostInUse = isHostDrawn && !isTab
+	if (isOffered || isHostInUse || !isHostOverdue) return false
 
 	isOffered = true
 	return true
+}
+
+/** Lets the own pane be offered again, as when the person moves agent-dock out of the host pane. */
+export const resetOwnPaneOffer = () => {
+	isOffered = false
 }
 
 /** Reads the room a pane's body gives, falling back to a typical dock height before the first layout. */

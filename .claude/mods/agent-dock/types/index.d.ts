@@ -22,6 +22,7 @@ declare module 'claude-code' {
 			view: { selected: string | null; offset: number; isArchiveOpen?: boolean }
 			share: number
 			shimmer: number
+			layout: 'split' | 'tab'
 		}
 	}
 }
