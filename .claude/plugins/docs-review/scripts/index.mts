@@ -1,27 +1,8 @@
 /**
  * Claude Code docs-review hook (PostToolUse)
  * Flags inline comments introduced by an edit so Claude reviews them against
- * CLAUDE.md's Code comments rules via the `docs-architect` agent, instead of
+ * the comment guidance in CLAUDE.md via the `docs-review:docs-architect` agent, instead of
  * letting low-value comments slip through unreviewed.
- *
- * Centralized here so every repo can share one copy: wire it up globally in
- * `~/.claude/settings.json` (see this directory's README) rather than in a
- * single project's `.claude/settings.local.json`.
- *
- * @example Wiring it up in `~/.claude/settings.json`:
- *
- * {
- *   "hooks": {
- *     "PostToolUse": [
- *       {
- *         "matcher": "Edit|Write",
- *         "hooks": [
- *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/docs-review/index.mts" }
- *         ]
- *       }
- *     ]
- *   }
- * }
  *
  * Claude Code pipes the tool-call payload into the command's stdin. For an
  * `Edit`, only a comment actually added or changed by `new_string` (relative
@@ -31,8 +12,22 @@
  * comment in `content` triggers a flag.
  */
 import { readFileSync } from 'node:fs'
+import { extname } from 'node:path'
 
 import { z } from 'zod'
+
+// The `//` heuristic below is only meaningful in these languages; in markdown,
+// shell or JSON it would flag URLs and comment syntax that is not a code comment.
+const CODE_EXTENSIONS = new Set([
+	'.ts',
+	'.tsx',
+	'.mts',
+	'.cts',
+	'.js',
+	'.jsx',
+	'.mjs',
+	'.cjs',
+])
 
 const payloadSchema = z.object({
 	tool_input: z.union([
@@ -72,6 +67,7 @@ const payload = parseStdinPayload()
 if (!payload) process.exit(0)
 
 const { tool_input: input } = payload
+if (!CODE_EXTENSIONS.has(extname(input.file_path))) process.exit(0)
 const addedComments =
 	'content' in input
 		? commentsIn(input.content)
@@ -85,8 +81,8 @@ if (addedComments.length === 0) process.exit(0)
 console.error(
 	`New or changed inline comment(s) in ${input.file_path}:\n` +
 		addedComments.map((comment) => `  - ${comment.trim()}`).join('\n') +
-		'\nInvoke the docs-architect agent (Agent tool, subagent_type: "docs-architect") to review ' +
-		"just these comments against CLAUDE.md's Code comments rules, and fix or remove any that " +
+		'\nInvoke the docs-architect agent (Agent tool, subagent_type: "docs-review:docs-architect") to review ' +
+		'just these comments against the comment guidance in CLAUDE.md, and fix or remove any that ' +
 		"don't hold up. Don't expand the review beyond comments in this file."
 )
 process.exit(2)

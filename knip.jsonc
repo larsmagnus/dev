@@ -1,20 +1,34 @@
 {
 	"$schema": "https://unpkg.com/knip@6/schema.json",
-	"entry": [
-		"**/*.test.{ts,tsx}",
-		".claude/mods/*/tests/*.test.{ts,tsx}",
-		// Claude Code runs these directly, nothing imports them.
-		".claude/hooks/*/index.mts",
-		".claude/agents/**/scripts/*.ts",
-		// Mod modules are loaded by path from JSX, never imported.
-		".claude/mods/*/hooks/*.tsx",
-	],
-	// Provided by the Claude Code runtime, not installable.
-	"ignoreDependencies": ["claude-code"],
-	"ignoreIssues": {
-		// shadcn/ui primitives, re-exports the primitive's surface,
-		// whether or not this app uses all of it,
-		// so that `pnpm dlx shadcn add` stays a clean overwrite.
-		"src/components/ui/**": ["exports", "types"],
+	"workspaces": {
+		".": {
+			"entry": [
+				"**/*.test.{ts,tsx}",
+				".claude/plugins/*.test.mts",
+				".claude/mods/*/tests/*.test.{ts,tsx}",
+				".claude/agents/**/scripts/*.ts",
+				// Linked into each script plugin as its SessionStart installer.
+				".claude/plugins/shared/*.mjs",
+				// Mod modules are loaded by path from JSX, never imported.
+				".claude/mods/*/hooks/*.tsx",
+			],
+			// Provided by the Claude Code runtime, not installable.
+			"ignoreDependencies": ["claude-code"],
+			"ignoreIssues": {
+				// shadcn/ui primitives, re-exports the primitive's surface,
+				// whether or not this app uses all of it,
+				// so that `pnpm dlx shadcn add` stays a clean overwrite.
+				"src/components/ui/**": ["exports", "types"],
+			},
+		},
+		".claude/plugins/*": {
+			// Claude Code runs the hooks and the installer, nothing imports them.
+			"entry": ["scripts/*.{mts,mjs}"],
+		},
+		".claude/plugins/code-quality": {
+			"entry": ["scripts/*.{mts,mjs}"],
+			// Run as binaries, or resolved at runtime rather than imported.
+			"ignoreDependencies": ["jscpd", "oxfmt", "oxlint"],
+		},
 	},
 }

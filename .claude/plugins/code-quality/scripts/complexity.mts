@@ -3,49 +3,26 @@
  * Warns when an edited file has grown too complex (via fta-cli),
  * so it can be improved before complexity compounds further.
  *
- * Centralized here so every repo can share one copy: wire it up globally in
- * `~/.claude/settings.json` (see this directory's README) rather than in a
- * single project's `.claude/settings.local.json`.
+ * Runs with `cwd` at the project root - that's what `fta.json` is resolved
+ * relative to below, so a project can override the bundled default just by
+ * adding its own.
  *
- * @example Wiring it up in `~/.claude/settings.json`:
- *
- * {
- *   "hooks": {
- *     "PostToolUse": [
- *       {
- *         "matcher": "Edit|Write",
- *         "hooks": [
- *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/complexity/index.mts" }
- *         ]
- *       }
- *     ]
- *   }
- * }
- *
- * Claude Code pipes the tool-call payload (including the edited file's path)
- * into the command's stdin, and runs the command with `cwd` set to the
- * project root - that's what `fta.json` is resolved relative to below, so a
- * project can override the bundled default just by adding its own.
- *
- * @example Overriding the score cap via `-s`/`--score-cap`
- * `node --no-warnings check-complexity.mts --score-cap 70`
+ * Overriding the score cap via `-s`/`--score-cap`:
+ * `node --no-warnings complexity.mts --score-cap 70`
  */
 import { existsSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { basename, join, matchesGlob, sep } from 'node:path'
 
 import { runFta } from 'fta-cli'
 import type { AnalyzedFile } from 'fta-cli'
 import { z } from 'zod'
 
+import { readPayload } from './payload.mts'
+
 /**
  * Last-resort cap, used only when no `fta.json` (project or bundled) is found.
  */
 const DEFAULT_SCORE_CAP = 50
-
-// Claude Code's PostToolUse payload - only the edited file's path matters here.
-const payloadSchema = z.object({
-	tool_input: z.object({ file_path: z.string() }),
-})
 
 /**
  * The subset of fta's config this hook honours. Strict on purpose: fta itself
@@ -57,6 +34,7 @@ const payloadSchema = z.object({
 const configSchema = z.strictObject({
 	score_cap: z.number().optional(),
 	exclude_directories: z.array(z.string()).optional(),
+	exclude_filenames: z.array(z.string()).optional(),
 })
 
 /**
@@ -90,40 +68,39 @@ function parseScoreCap(argv: string[]): number | undefined {
 /**
  * Whether `fta.json` excludes this file. `runFta` only ever forwards `--json` to
  * the binary, so the config never reaches it on the hook path - without this the
- * hook would nag on every edit to a directory the project's rules forbid touching.
+ * hook would nag on every edit to a directory or file the project's rules exempt.
  *
- * fta resolves its exclusions against the analysed root, which each project's own
- * `pnpm complexity`-style script sets to `src`, hence the `src` prefix added back
- * here to match.
+ * Directories match as a path segment anywhere in the file's path: fta anchors
+ * them to whatever root a project analyses, which the hook can't know. Filename
+ * patterns are globs on the basename.
  */
-function isExcluded(filePath: string, excluded: string[]): boolean {
-	return excluded.some((directory) =>
-		filePath.includes(join('src', directory) + '/')
+function isExcluded(
+	filePath: string,
+	{
+		exclude_directories = [],
+		exclude_filenames = [],
+	}: z.infer<typeof configSchema>
+): boolean {
+	return (
+		exclude_directories.some((directory) =>
+			filePath.includes(join(sep, directory) + sep)
+		) ||
+		exclude_filenames.some((pattern) =>
+			matchesGlob(basename(filePath), pattern)
+		)
 	)
-}
-
-// Any failure here (no stdin, malformed JSON, unexpected shape) just means
-// there's nothing to check - fail open rather than crash the hook.
-function readFilePathFromStdin(): string | undefined {
-	try {
-		const raw = readFileSync(0, 'utf-8')
-		const parsed = payloadSchema.safeParse(JSON.parse(raw))
-		return parsed.success ? parsed.data.tool_input.file_path : undefined
-	} catch {
-		return undefined
-	}
 }
 
 const config = readConfig()
 const scoreCap =
 	parseScoreCap(process.argv.slice(2)) ?? config.score_cap ?? DEFAULT_SCORE_CAP
-const filePath = readFilePathFromStdin()
+const filePath = readPayload()?.tool_input.file_path
 
 if (!filePath || !existsSync(filePath)) {
 	process.exit(0)
 }
 
-if (isExcluded(filePath, config.exclude_directories ?? [])) {
+if (isExcluded(filePath, config)) {
 	process.exit(0)
 }
 

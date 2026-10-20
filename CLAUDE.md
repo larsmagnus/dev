@@ -31,7 +31,7 @@
 ## Delegation
 
 - Use `@agents/test-architect` subagent when creating, updating or reviewing tests
-- Use `@agents/docs-architect` when writing markdown, creating documentation, system prompts, or subagents
+- Use `docs-review:docs-architect` when writing markdown, creating documentation, system prompts, or subagents
 
 ## Text
 

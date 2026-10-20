@@ -1,0 +1,5 @@
+{
+	"name": "code-quality",
+	"description": "Format, complexity and duplication checks after every edit, run in order so the analysers see the formatted file",
+	"author": { "name": "Lars Magnus Klavenes" }
+}

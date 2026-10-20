@@ -11,7 +11,7 @@ macOS. `sips` makes thumbnails and reads image sizes. `base64 -D` decodes pasted
 ## Install
 
 ```sh
-claude plugin marketplace add ~/sites/dev/.claude/mods
+claude plugin marketplace add larsmagnus/dev
 claude plugin install attachments@larsmagnus --scope user
 ```
 

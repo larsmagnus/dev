@@ -9,7 +9,7 @@ Splits a host plugin's pane to show agent-dock below, with a draggable divider. 
 ## Install
 
 ```sh
-claude plugin marketplace add ~/sites/dev/.claude/mods
+claude plugin marketplace add larsmagnus/dev
 claude plugin install agent-dock@larsmagnus --scope user
 ```
 

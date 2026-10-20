@@ -9,7 +9,7 @@ Shows three highlights, grouped as new, changed, breaking and other. `Show n mor
 ## Install
 
 ```sh
-claude plugin marketplace add ~/sites/dev/.claude/mods
+claude plugin marketplace add larsmagnus/dev
 claude plugin install release-highlights@larsmagnus --scope user
 ```
 

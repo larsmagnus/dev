@@ -11,7 +11,21 @@ Dev setup, tooling, themes and productivity workflows.
 
 ## Claude Code
 
-Some of the setup I use every day for work.
+The setup I use every day for work.
+
+### Install
+
+```sh
+claude plugin marketplace add larsmagnus/dev
+claude plugin install agent-dock@larsmagnus
+claude plugin install attachments@larsmagnus
+claude plugin install release-highlights@larsmagnus
+claude plugin install code-quality@larsmagnus
+claude plugin install docs-review@larsmagnus
+```
+
+Not currently versioned, so every push to main updates the plugins.
+Requires Node 22.18 or newer.
 
 ### Settings
 
@@ -21,10 +35,8 @@ Some of the setup I use every day for work.
 
 Do as much deterministic work as possible with hooks.
 
-- [complexity](.claude/hooks/complexity/index.mts) - Check code complexity with fta to keep files simple
-- [docs-review](.claude/hooks/docs-review/index.mts) - Flag new inline comments for docs-architect review against CLAUDE.md
-- [duplication](.claude/hooks/duplication/index.mts) - Check for duplicates and near-duplicates to avoid bloat
-- [format](.claude/hooks/format/index.mts) - Format and auto-fix with oxlint and oxfmt to reduce iteration cycles
+- [code-quality](.claude/plugins/code-quality/README.md) - Format, complexity and duplication checks after every edit
+- [docs-review](.claude/plugins/docs-review/README.md) - Flag new inline comments for docs-architect review against CLAUDE.md
 
 ### Rules
 
@@ -39,7 +51,7 @@ Prefer deterministic work in hooks, linting and formatting before rules.
 Keep agents lean and in the background.
 
 - [content-architect](.claude/agents/content-architect.md) - Understand large-scale content structures with minimal context use
-- [docs-architect](.claude/agents/docs-architect.md) - Write crystal clear docs and treat code as the source of truth
+- [docs-architect](.claude/plugins/docs-review/agents/docs-architect.md) - Write crystal clear docs and treat code as the source of truth
 - [test-architect](.claude/agents/test-architect.md) - Make tests that give you confidence to change
 
 ### Skills
@@ -47,12 +59,12 @@ Keep agents lean and in the background.
 Make them easy and predictable to use for humans and agents.
 
 - [commit](.claude/skills/commit/SKILL.md)
-- [docs](.claude/skills/docs/SKILL.md)
+- [docs](.claude/plugins/docs-review/skills/docs/SKILL.md)
 - [feedback-loop](.claude/skills/feedback-loop/SKILL.md)
 
 ### Mods
 
-Change Claude's own interface. Shipped as the [larsmagnus](.claude/mods/.claude-plugin/marketplace.json) plugin marketplace.
+Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/marketplace.json) plugin marketplace.
 
 - [agent-dock](.claude/mods/agent-dock/README.md) - Live subagents beside your files in a resizable dock pane
 - [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, saved with thumbnails and refs to re-insert

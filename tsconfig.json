@@ -7,7 +7,12 @@
 		"strict": true,
 		"skipLibCheck": true,
 		"noEmit": true,
+		"allowImportingTsExtensions": true,
 		"types": ["node"]
 	},
-	"include": [".claude/hooks/**/*.mts", ".claude/agents/**/scripts/**/*.ts"]
+	"include": [
+		".claude/plugins/**/*.mts",
+		".claude/plugins/**/*.mjs",
+		".claude/agents/**/scripts/**/*.ts"
+	]
 }

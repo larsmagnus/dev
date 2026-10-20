@@ -1,6 +1,5 @@
 {
 	"name": "attachments",
-	"version": "0.1.0",
 	"description": "Every image and file you attach to a session, saved with thumbnails, refs and metadata in a pane",
 	"author": {
 		"name": "Lars Magnus Klavenes"

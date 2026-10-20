@@ -1,6 +1,5 @@
 {
 	"name": "agent-dock",
-	"version": "0.1.0",
 	"description": "Live subagents beside your files. Splits a pane of your choice or opens its own",
 	"author": {
 		"name": "Lars Magnus Klavenes"

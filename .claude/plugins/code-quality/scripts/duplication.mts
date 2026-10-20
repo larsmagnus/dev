@@ -4,33 +4,12 @@
  * (via jscpd), so near-identical code can be extracted before it spreads
  * further.
  *
- * Centralized here so every repo can share one copy: wire it up globally in
- * `~/.claude/settings.json` (see this directory's README) rather than in a
- * single project's `.claude/settings.local.json`.
- *
- * @example Wiring it up in `~/.claude/settings.json`:
- *
- * {
- *   "hooks": {
- *     "PostToolUse": [
- *       {
- *         "matcher": "Edit|Write",
- *         "hooks": [
- *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/duplication/index.mts" }
- *         ]
- *       }
- *     ]
- *   }
- * }
- *
- * Claude Code pipes the tool-call payload (including the edited file's path)
- * into the command's stdin, and runs the command with `cwd` set to the
- * project root. A project's own `.jscpd.json` at that root is the source of
- * truth for what gets scanned and ignored - this hook re-scans the whole
- * project (jscpd's own native binary does this in ~20-30ms) rather than
- * re-implementing its ignore rules, and simply filters the report for clones
- * touching the edited file. A project without its own `.jscpd.json` falls
- * back to the generic default bundled alongside this script.
+ * Runs with `cwd` at the project root. A project's own `.jscpd.json` there is
+ * the source of truth for what gets scanned and ignored - this hook re-scans
+ * the whole project (jscpd's own native binary does this in ~20-30ms) rather
+ * than re-implementing its ignore rules, and simply filters the report for
+ * clones touching the edited file. A project without its own `.jscpd.json`
+ * falls back to the generic default bundled alongside this script.
  */
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs'
@@ -40,9 +19,7 @@ import { join, relative, resolve } from 'node:path'
 
 import { z } from 'zod'
 
-const payloadSchema = z.object({
-	tool_input: z.object({ file_path: z.string() }),
-})
+import { readPayload } from './payload.mts'
 
 const cloneLocationSchema = z.object({
 	name: z.string(),
@@ -99,18 +76,6 @@ function resolveScanRoot(
 	}
 }
 
-// Any failure here (no stdin, malformed JSON, unexpected shape) just means
-// there's nothing to check - fail open rather than crash the hook.
-function readFilePathFromStdin(): string | undefined {
-	try {
-		const raw = readFileSync(0, 'utf-8')
-		const parsed = payloadSchema.safeParse(JSON.parse(raw))
-		return parsed.success ? parsed.data.tool_input.file_path : undefined
-	} catch {
-		return undefined
-	}
-}
-
 function describeClone(
 	other: z.infer<typeof cloneLocationSchema>,
 	edited: z.infer<typeof cloneLocationSchema>
@@ -118,7 +83,7 @@ function describeClone(
 	return `${edited.name}:${edited.startLoc.line}-${edited.endLoc.line} duplicates ${other.name}:${other.startLoc.line}-${other.endLoc.line}`
 }
 
-const filePath = readFilePathFromStdin()
+const filePath = readPayload()?.tool_input.file_path
 if (!filePath || !existsSync(filePath)) {
 	process.exit(0)
 }

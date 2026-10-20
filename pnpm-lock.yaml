@@ -14,9 +14,6 @@ importers:
       jscpd:
         specifier: 5.4.0
         version: 5.4.0
-      zod:
-        specifier: 4.6.5
-        version: 4.6.5
     devDependencies:
       '@types/node':
         specifier: 26.6.4
@@ -39,6 +36,30 @@ importers:
       typescript:
         specifier: 7.0.2
         version: 7.0.2
+
+  .claude/plugins/code-quality:
+    dependencies:
+      fta-cli:
+        specifier: 3.1.0
+        version: 3.1.0
+      jscpd:
+        specifier: 5.4.0
+        version: 5.4.0
+      oxfmt:
+        specifier: 0.72.0
+        version: 0.72.0
+      oxlint:
+        specifier: 1.87.0
+        version: 1.87.0(oxlint-tsgolint@7.0.2003)
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
+
+  .claude/plugins/docs-review:
+    dependencies:
+      zod:
+        specifier: 4.6.5
+        version: 4.6.5
 
 packages:
 

@@ -1,61 +1,36 @@
 /**
  * Claude Code format hook (PostToolUse)
- * Auto-fixes and formats the edited file with the project's own oxlint and
- * oxfmt, then hands any lint errors those tools couldn't fix back to Claude,
- * so a turn ends with formatted, lint-clean code instead of a cleanup pass later.
+ * Auto-fixes and formats the edited file with oxlint and oxfmt, then hands any
+ * lint errors those tools couldn't fix back to Claude, so a turn ends with
+ * formatted, lint-clean code instead of a cleanup pass later.
  *
- * Centralized here so every repo can share one copy: wire it up globally in
- * `~/.claude/settings.json` (see this directory's README) rather than in a
- * single project's `.claude/settings.local.json`.
- *
- * @example Wiring it up in `~/.claude/settings.json`:
- *
- * {
- *   "hooks": {
- *     "PostToolUse": [
- *       {
- *         "matcher": "Edit|Write",
- *         "hooks": [
- *           { "type": "command", "command": "node --no-warnings ~/.claude/hooks/format/index.mts" }
- *         ]
- *       }
- *     ]
- *   }
- * }
- *
- * Claude Code pipes the tool-call payload (including the edited file's path)
- * into the command's stdin, and runs the command with `cwd` set to the project
- * root. Both binaries discover their own config (`.oxlintrc.json`, `.oxfmtrc.json`)
- * from there, including nested configs in subdirectories, so the project's rules
- * apply with no wiring.
- *
- * Unlike the complexity and duplication hooks, this one rewrites files - so it
- * only ever runs binaries installed in the target project, never the copies
- * living alongside this script. A different oxfmt version or a default config
- * would reformat the whole file against the project's conventions.
+ * Both binaries discover their own config (`.oxlintrc.json`, `.oxfmtrc.json`)
+ * from the project root, including nested configs in subdirectories, so the
+ * project's rules apply with no wiring. This one rewrites files, so the
+ * project's own binaries win over the plugin's: a different oxfmt version
+ * would reformat the whole file against another set of conventions. The
+ * plugin's copies are only a fallback for projects that install neither.
  */
 import { spawnSync } from 'node:child_process'
 import { createHash } from 'node:crypto'
-import { existsSync, writeFileSync, readFileSync } from 'node:fs'
+import { existsSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 
-import { z } from 'zod'
+import { readPayload } from './payload.mts'
 
-const payloadSchema = z.object({
-	session_id: z.string().optional(),
-	tool_input: z.object({ file_path: z.string() }),
-})
+const BIN_DIRECTORY = join('node_modules', '.bin')
+const BUNDLED_BIN_DIRECTORY = join(import.meta.dirname, '..', BIN_DIRECTORY)
 
-// Any failure here (no stdin, malformed JSON, unexpected shape) just means
-// there's nothing to format - fail open rather than crash the hook.
-function readPayload(): z.infer<typeof payloadSchema> | undefined {
-	try {
-		const parsed = payloadSchema.safeParse(JSON.parse(readFileSync(0, 'utf-8')))
-		return parsed.success ? parsed.data : undefined
-	} catch {
-		return undefined
-	}
+/**
+ * The project's own binary if it has one, else the plugin's installed copy.
+ */
+function findBin(name: string, from: string): string | undefined {
+	const bundled = join(BUNDLED_BIN_DIRECTORY, name)
+	return (
+		findUp(join(BIN_DIRECTORY, name), from) ??
+		(existsSync(bundled) ? bundled : undefined)
+	)
 }
 
 /**
@@ -112,8 +87,8 @@ const filePath = resolve(payload.tool_input.file_path)
 if (!existsSync(filePath)) process.exit(0)
 
 const fromDirectory = dirname(filePath)
-const oxlint = findUp(join('node_modules', '.bin', 'oxlint'), fromDirectory)
-const oxfmt = findUp(join('node_modules', '.bin', 'oxfmt'), fromDirectory)
+const oxlint = findBin('oxlint', fromDirectory)
+const oxfmt = findBin('oxfmt', fromDirectory)
 
 if (!oxlint || !oxfmt) {
 	// No package.json anywhere up the tree means this isn't a JS project at all

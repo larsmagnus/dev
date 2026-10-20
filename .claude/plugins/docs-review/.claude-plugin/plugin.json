@@ -1,0 +1,5 @@
+{
+	"name": "docs-review",
+	"description": "Flags new inline comments for review by the docs-architect agent, plus a /docs skill to review docs and comments on demand",
+	"author": { "name": "Lars Magnus Klavenes" }
+}

@@ -1,0 +1,14 @@
+{
+	"name": "larsmagnus",
+	"owner": { "name": "Lars Magnus Klavenes" },
+	"plugins": [
+		{ "name": "agent-dock", "source": "./.claude/mods/agent-dock" },
+		{ "name": "attachments", "source": "./.claude/mods/attachments" },
+		{
+			"name": "release-highlights",
+			"source": "./.claude/mods/release-highlights"
+		},
+		{ "name": "code-quality", "source": "./.claude/plugins/code-quality" },
+		{ "name": "docs-review", "source": "./.claude/plugins/docs-review" }
+	]
+}

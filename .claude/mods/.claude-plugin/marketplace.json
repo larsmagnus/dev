@@ -1,9 +1,0 @@
-{
-	"name": "larsmagnus",
-	"owner": { "name": "Lars Magnus Klavenes" },
-	"plugins": [
-		{ "name": "agent-dock", "source": "./agent-dock" },
-		{ "name": "attachments", "source": "./attachments" },
-		{ "name": "release-highlights", "source": "./release-highlights" }
-	]
-}

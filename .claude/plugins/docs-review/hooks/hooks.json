@@ -1,0 +1,25 @@
+{
+	"hooks": {
+		"SessionStart": [
+			{
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/install.mjs\""
+					}
+				]
+			}
+		],
+		"PostToolUse": [
+			{
+				"matcher": "Edit|Write",
+				"hooks": [
+					{
+						"type": "command",
+						"command": "node --no-warnings \"${CLAUDE_PLUGIN_ROOT}/scripts/index.mts\""
+					}
+				]
+			}
+		]
+	}
+}

@@ -24,7 +24,7 @@
 		"verify": "pnpm lint && pnpm complexity && pnpm duplication && pnpm knip",
 		"verify:check": "pnpm lint:check && pnpm complexity && pnpm duplication:check && pnpm knip",
 		"knip": "knip",
-		"test": "for mod in .claude/mods/*/; do claude plugin test \"$mod\" || exit 1; done"
+		"test": "for mod in .claude/mods/*/; do claude plugin test \"$mod\" || exit 1; done && node --test .claude/plugins/install.test.mts"
 	},
 	"devDependencies": {
 		"@types/node": "26.6.4",
@@ -37,8 +37,7 @@
 	},
 	"dependencies": {
 		"fta-cli": "3.1.0",
-		"jscpd": "5.4.0",
-		"zod": "4.6.5"
+		"jscpd": "5.4.0"
 	},
 	"keywords": [
 		"setup",
