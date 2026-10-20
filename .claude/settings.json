@@ -72,8 +72,8 @@
 		},
 		"larsmagnus": {
 			"source": {
-				"source": "directory",
-				"path": "/Users/larsmagnus/sites/dev"
+				"source": "github",
+				"repo": "larsmagnus/dev"
 			}
 		}
 	},
