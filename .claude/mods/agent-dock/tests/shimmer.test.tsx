@@ -14,7 +14,7 @@ const paneProps = {
 function world(on: On, agents: AgentInfo[]) {
 	const draws = { count: 0 }
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
-	mock.store(on)
+	mock.store(on, { host: 'filetree' })
 	mock.env(on, { HOME: '/Users/ada' })
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
 	on('session.id', () => ({ value: 'session-4f2a9c' }))

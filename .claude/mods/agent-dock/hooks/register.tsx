@@ -15,18 +15,17 @@ import {
 	setAutoArchive,
 } from './archive'
 import { bufferTaskEnd, bufferText, bufferUsage, drainBuffers } from './buffers'
+import { drawDockHeader } from './divider-row'
 import { foldTick, hasWork, withSpawn, withToolCall } from './feed'
 import { frontmatterColor } from './format'
 import {
 	claimOwnPaneOffer,
-	hasHostPane,
 	lastTranscriptSize,
 	markHostDrawn,
 	markLoaded,
 	paneSize,
 	rememberTranscriptSize,
 	resetOwnPaneOffer,
-	setHostPane,
 } from './own-pane'
 import { restoreRows, storedRows, withStoredRows } from './persist'
 import { SCROLLBAR_COLUMNS } from './scrollbar'
@@ -55,6 +54,7 @@ const share = atom(
 )
 const shimmer = atom({ plugin: 'agent-dock', key: 'shimmer' } as const, 0)
 const layout = atom({ plugin: 'agent-dock', key: 'layout' } as const, 'split')
+const host = atom({ plugin: 'agent-dock', key: 'host' } as const, '')
 
 const OWN_PANE = 'agents'
 const TICK_MS = 1000
@@ -62,15 +62,16 @@ const TICK_MS = 1000
 const SHIMMER_MS = 150
 const STORE_KEY = 'sessions'
 const LAYOUT_KEY = 'layout'
+const HOST_KEY = 'host'
 
 let sessionId = ''
 let persisted = ''
 
 /** Whether agent-dock shows in a pane of its own: by choice, or because no host pane is configured. */
 const isTabLayout = async ($: EngineInterface) =>
-	!hasHostPane() || (await read($, layout)) === 'tab'
+	(await read($, host)) === '' || (await read($, layout)) === 'tab'
 
-/** Opens agent-dock's own pane, swallowing a refusal: an unplaced pane is the person's to open with `/agents`. */
+/** Opens agent-dock's own pane, swallowing a refusal: an unplaced pane is the person's to open with `/agent-dock:toggle`. */
 const openOwnPane = ($: EngineInterface) =>
 	$.ui.open({ id: OWN_PANE, title: 'Agents' }).catch(() => undefined)
 
@@ -161,6 +162,27 @@ const readView = async ($: EngineInterface) => {
 	return { rows, offset, isArchiveOpen, opened: { row: openRow, lines } }
 }
 
+/** Moves agent-dock between the host pane and a pane of its own, and keeps the choice; with no host pane there is nothing to move between. */
+const toggleLayout = async ($: EngineInterface) => {
+	const hostPane = await read($, host)
+	if (hostPane === '')
+		return {
+			text: 'No host pane is set (/agent-dock:set-host), so agents always have their own pane.',
+		}
+
+	const next = (await read($, layout)) === 'tab' ? 'split' : 'tab'
+	await update($, layout, () => next)
+	await $.store.set(LAYOUT_KEY, next)
+	if (next === 'split') {
+		await $.ui.close({ id: OWN_PANE }).catch(() => undefined)
+		return { text: `Agents split into the ${hostPane} pane.` }
+	}
+
+	resetOwnPaneOffer()
+	await openOwnPane($)
+	return { text: 'Agents moved to a pane of their own.' }
+}
+
 /** Draws the agent list into a terminal pane, under the host pane's own tree when one is given. */
 const drawAgents = async (
 	$: EngineInterface,
@@ -178,14 +200,28 @@ const drawAgents = async (
 		),
 	})
 
+	const ui = $.ui.resolve(e)
+	const shown = await readView($)
+
 	return splitPane({
-		ui: $.ui.resolve(e),
-		tree,
-		...(await readView($)),
+		ui,
+		...shown,
 		now: await $.clock.now(),
 		...size,
 		phase: await read($, shimmer),
 		treeRows,
+		header: drawDockHeader(
+			ui,
+			shown.rows,
+			{ columns: size.bodyColumns, bodyRows: size.bodyRows },
+			(await read($, host)) === ''
+				? undefined
+				: {
+						label: (await isTabLayout($)) ? ' ⇄ split' : ' ⇄ tab',
+						press: () => void toggleLayout($),
+					},
+			{ node: tree, rows: treeRows }
+		),
 		select: (id) => () =>
 			void update($, view, (current) => ({
 				...current,
@@ -208,7 +244,6 @@ const drawAgents = async (
 
 /** Feeds the agent list from engine events and draws it in the host pane, or in its own pane where there is none. */
 export const register: Register = (on, options) => {
-	const hostPane = setHostPane(options.hostPane)
 	setAutoArchive(options.autoArchiveMinutes)
 
 	on('session.start', async ($, e, next) => {
@@ -227,20 +262,14 @@ export const register: Register = (on, options) => {
 			)
 			await update($, agents, () => restored)
 		}
+		const storedHost = await $.store.get(HOST_KEY)
+		await update($, host, () =>
+			typeof storedHost === 'string' ? storedHost : ''
+		)
 		const storedLayout = await $.store.get(LAYOUT_KEY)
 		await update($, layout, () => (storedLayout === 'tab' ? 'tab' : 'split'))
 		$.clock.every(TICK_MS, () => void pulse($))
 		$.clock.every(SHIMMER_MS, () => void shimmerStep($))
-		await $.command.register({
-			name: 'agents',
-			description: "Open agent-dock's own pane of this session's subagents",
-		})
-		await $.command.register({
-			name: 'agents-layout',
-			description:
-				'Toggle agent-dock between a split in the host pane and a pane of its own',
-		})
-
 		return next(e)
 	})
 
@@ -306,29 +335,33 @@ export const register: Register = (on, options) => {
 		return next(e)
 	})
 
-	on('command.run', { command: 'agents' }, async ($) => {
-		await openOwnPane($)
+	on('command.run', { command: 'agent-dock:toggle' }, async ($) => {
+		const isOpen = (await $.ui.panes()).some((pane) => pane.id === OWN_PANE)
+		if (isOpen) {
+			await $.ui.close({ id: OWN_PANE })
+			return { text: 'Agents pane closed.' }
+		}
 
+		await openOwnPane($)
 		return { text: 'Agents pane opened.' }
 	})
 
-	on('command.run', { command: 'agents-layout' }, async ($) => {
-		if (!hasHostPane())
-			return {
-				text: 'No host pane is set, so agents always have their own pane.',
-			}
+	on('command.run', { command: 'agent-dock:layout' }, ($) => toggleLayout($))
 
-		const next = (await read($, layout)) === 'tab' ? 'split' : 'tab'
-		await update($, layout, () => next)
-		await $.store.set(LAYOUT_KEY, next)
-		if (next === 'split') {
-			await $.ui.close({ id: OWN_PANE }).catch(() => undefined)
-			return { text: `Agents split into the ${hostPane} pane.` }
+	on('command.run', { command: 'agent-dock:set-host' }, async ($, e) => {
+		const id = (e.args ?? '').trim()
+		await update($, host, () => id)
+		await $.store.set(HOST_KEY, id)
+		resetOwnPaneOffer()
+		if (id === '' || (await read($, layout)) === 'tab') {
+			await openOwnPane($)
+			return {
+				text: id === '' ? 'Host pane cleared.' : `Host pane set to ${id}.`,
+			}
 		}
 
-		resetOwnPaneOffer()
-		await openOwnPane($)
-		return { text: 'Agents moved to a pane of their own.' }
+		await $.ui.close({ id: OWN_PANE }).catch(() => undefined)
+		return { text: `Agents split into the ${id} pane.` }
 	})
 
 	on('ui.message', async ($, e, next) => {
@@ -346,7 +379,7 @@ export const register: Register = (on, options) => {
 
 	// Wheel ticks over the agent list scroll it; the rest of the pane, the host's tree, keeps its own scrolling.
 	on('ui.scroll', { component: 'Pane' }, async ($, e, next) => {
-		const panes = { host: hostPane, own: OWN_PANE }
+		const panes = { host: await read($, host), own: OWN_PANE }
 		const { rows, opened, isArchiveOpen } = await readView($)
 		if (rows.length === 0 || !isListScroll(e, panes, await read($, share)))
 			return next(e)
@@ -374,10 +407,11 @@ export const register: Register = (on, options) => {
 	// A host that draws without calling next (filetree does) never reaches this hook unless agent-dock is listed before it in enabledPlugins.
 	on('ui.render', { component: 'Pane' }, async ($, e, next) => {
 		const isOwn = e.requestId === OWN_PANE
-		if (e.requestId === hostPane) markHostDrawn()
+		const hostPane = await read($, host)
+		if (hostPane !== '' && e.requestId === hostPane) markHostDrawn()
 		if (
 			(e.surface !== 'terminal' && e.surface !== 'desktop') ||
-			(!isOwn && e.requestId !== hostPane)
+			(!isOwn && (hostPane === '' || e.requestId !== hostPane))
 		)
 			return next(e)
 		if (isOwn) return drawAgents($, e)

@@ -21,7 +21,9 @@ function world(
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
 	const opened: string[] = []
 	const closed: string[] = []
-	const saved = new Map(Object.entries(stored))
+	const saved = new Map<string, unknown>(
+		Object.entries({ host: 'filetree', ...stored })
+	)
 	on('store.get', (_$, e) => ({ value: saved.get(e.key) }))
 	on('store.set', (_$, e) => {
 		saved.set(e.key, e.value)
@@ -35,6 +37,17 @@ function world(
 		return { value: { isPlaced: true } }
 	})
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))
+	on('ui.panes', () => ({
+		value: opened
+			.filter((id) => !closed.includes(id))
+			.map((id) => ({
+				id,
+				title: id,
+				isShown: true,
+				isFocused: false,
+				isPlaced: true,
+			})),
+	}))
 	on('ui.close', (_$, e) => {
 		closed.push(e.id)
 		return { value: undefined }
@@ -112,53 +125,45 @@ test('should never open the agents pane when the host pane has drawn', async ($,
 	await host.unmount()
 })
 
-test(
-	'should open the agents pane without the grace period and leave filetree unwrapped when hostPane is empty',
-	{ options: { hostPane: '' } },
-	async ($, on) => {
-		const { clock, opened } = world(on, [runningAgent()])
-		await startSession($)
+test('should open the agents pane without the grace period and leave filetree unwrapped when no host is set', async ($, on) => {
+	const { clock, opened } = world(on, [runningAgent()], { host: '' })
+	await startSession($)
 
-		await clock.advance(1000)
-		expect(opened).toEqual(['agents'])
+	await clock.advance(1000)
+	expect(opened).toEqual(['agents'])
 
-		const ui = await mountPane($, 'filetree')
-		const drawn = await shown(ui)
-		expect(drawn).toContain(FILETREE_TEXT)
-		expect(drawn).not.toContain('Agents (')
-		await ui.unmount()
-	}
-)
+	const ui = await mountPane($, 'filetree')
+	const drawn = await shown(ui)
+	expect(drawn).toContain(FILETREE_TEXT)
+	expect(drawn).not.toContain('Agents (')
+	await ui.unmount()
+})
 
-test(
-	'should split the notes pane and not the filetree pane when hostPane is notes',
-	{ options: { hostPane: 'notes' } },
-	async ($, on) => {
-		const { clock } = world(on, [runningAgent()])
-		await startSession($)
-		await clock.advance(1000)
+test('should split the notes pane and not the filetree pane when the host is notes', async ($, on) => {
+	const { clock } = world(on, [runningAgent()], { host: 'notes' })
+	await startSession($)
+	await clock.advance(1000)
 
-		const notes = await mountPane($, 'notes')
-		const notesDrawn = await shown(notes)
-		expect(notesDrawn).toContain(NOTES_TEXT)
-		expect(notesDrawn).toContain('Agents (1 running, 1 total)')
-		await notes.unmount()
+	const notes = await mountPane($, 'notes')
+	const notesDrawn = await shown(notes)
+	expect(notesDrawn).toContain(NOTES_TEXT)
+	expect(notesDrawn).toContain('Agents (1 running, 1 total)')
+	await notes.unmount()
 
-		const filetree = await mountPane($, 'filetree')
-		const filetreeDrawn = await shown(filetree)
-		expect(filetreeDrawn).toContain(FILETREE_TEXT)
-		expect(filetreeDrawn).not.toContain('Agents (')
-		await filetree.unmount()
-	}
-)
+	const filetree = await mountPane($, 'filetree')
+	const filetreeDrawn = await shown(filetree)
+	expect(filetreeDrawn).toContain(FILETREE_TEXT)
+	expect(filetreeDrawn).not.toContain('Agents (')
+	await filetree.unmount()
+})
 
-test('should open the agents pane on /agents even with no agents', async ($, on) => {
+test('should open the agents pane on /agent-dock:toggle even with no agents', async ($, on) => {
 	const { clock, opened } = world(on, [])
 	await startSession($)
 	await clock.settle()
 
 	const result = await $.command.run({
-		command: 'agents',
+		command: 'agent-dock:toggle',
 		args: '',
 		origin: { kind: 'composer' },
 		presentation: { isFullscreen: false, columns: 120 },
@@ -166,6 +171,25 @@ test('should open the agents pane on /agents even with no agents', async ($, on)
 
 	expect(opened).toEqual(['agents'])
 	expect(result).toMatchObject({ text: 'Agents pane opened.' })
+})
+
+test('should close the agents pane when /agent-dock:toggle runs while it is open', async ($, on) => {
+	const { clock, closed } = world(on, [])
+	await startSession($)
+	await clock.settle()
+	const toggle = () =>
+		$.command.run({
+			command: 'agent-dock:toggle',
+			args: '',
+			origin: { kind: 'composer' },
+			presentation: { isFullscreen: false, columns: 120 },
+		})
+	await toggle()
+
+	const result = await toggle()
+
+	expect(closed).toEqual(['agents'])
+	expect(result).toMatchObject({ text: 'Agents pane closed.' })
 })
 
 test('should draw the agent rows in the agents pane with no host tree above them', async ($, on) => {
@@ -185,7 +209,7 @@ test('should draw the agent rows in the agents pane with no host tree above them
 
 const toggleLayout = ($: Engine) =>
 	$.command.run({
-		command: 'agents-layout',
+		command: 'agent-dock:layout',
 		args: '',
 		origin: { kind: 'composer' },
 		presentation: { isFullscreen: false, columns: 120 },
@@ -261,24 +285,20 @@ test('should start a fresh session in tab layout from the stored choice', async 
 	await host.unmount()
 })
 
-test(
-	'should change nothing and say no host pane is set when toggled with hostPane empty',
-	{ options: { hostPane: '' } },
-	async ($, on) => {
-		const { clock, opened, closed, saved } = world(on, [])
-		await startSession($)
-		await clock.settle()
+test('should change nothing and say no host pane is set when toggled with no host', async ($, on) => {
+	const { clock, opened, closed, saved } = world(on, [], { host: '' })
+	await startSession($)
+	await clock.settle()
 
-		const result = await toggleLayout($)
+	const result = await toggleLayout($)
 
-		expect(result).toMatchObject({
-			text: expect.stringContaining('No host pane is set'),
-		})
-		expect(opened).toEqual([])
-		expect(closed).toEqual([])
-		expect(saved.has('layout')).toBe(false)
-	}
-)
+	expect(result).toMatchObject({
+		text: expect.stringContaining('No host pane is set'),
+	})
+	expect(opened).toEqual([])
+	expect(closed).toEqual([])
+	expect(saved.has('layout')).toBe(false)
+})
 
 test('should offer the own pane once without the grace period in tab layout even when the host pane is drawn', async ($, on) => {
 	const { clock, opened } = world(on, [runningAgent()], { layout: 'tab' })
@@ -293,4 +313,60 @@ test('should offer the own pane once without the grace period in tab layout even
 	await clock.advance(1000)
 	expect(opened).toEqual(['agents'])
 	await host.unmount()
+})
+
+const setHost = ($: Engine, args: string) =>
+	$.command.run({
+		command: 'agent-dock:set-host',
+		args,
+		origin: { kind: 'composer' },
+		presentation: { isFullscreen: false, columns: 120 },
+	})
+
+test('should split the named pane and save it when set-host names one', async ($, on) => {
+	const { clock, saved } = world(on, [runningAgent()], { host: '' })
+	await startSession($)
+	await clock.advance(1000)
+
+	const result = await setHost($, ' notes ')
+
+	expect(result).toMatchObject({ text: 'Agents split into the notes pane.' })
+	expect(saved.get('host')).toBe('notes')
+	const notes = await mountPane($, 'notes')
+	expect(await shown(notes)).toContain('Agents (1 running, 1 total)')
+	await notes.unmount()
+})
+
+test('should stop splitting and open the own pane when set-host is given nothing', async ($, on) => {
+	const { clock, opened, saved } = world(on, [runningAgent()])
+	await startSession($)
+	await clock.advance(1000)
+
+	const result = await setHost($, '')
+
+	expect(result).toMatchObject({ text: 'Host pane cleared.' })
+	expect(saved.get('host')).toBe('')
+	expect(opened).toEqual(['agents'])
+	const host = await mountPane($, 'filetree')
+	expect(await shown(host)).not.toContain('Agents (')
+	await host.unmount()
+})
+
+test('should offer a layout button naming the other layout only when a host is set', async ($, on) => {
+	const { clock } = world(on, [runningAgent()])
+	await startSession($)
+	await clock.advance(1000)
+	const host = await mountPane($, 'filetree')
+	expect(await shown(host)).toContain('⇄ tab')
+	await host.unmount()
+
+	await toggleLayout($)
+	const own = await mountPane($, 'agents')
+	expect(await shown(own)).toContain('⇄ split')
+	await own.unmount()
+
+	await setHost($, '')
+	const alone = await mountPane($, 'agents')
+	expect(await shown(alone)).not.toContain('⇄')
+	await alone.unmount()
 })

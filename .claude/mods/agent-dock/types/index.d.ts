@@ -23,6 +23,7 @@ declare module 'claude-code' {
 			share: number
 			shimmer: number
 			layout: 'split' | 'tab'
+			host: string
 		}
 	}
 }

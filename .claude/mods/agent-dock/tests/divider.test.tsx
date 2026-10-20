@@ -27,7 +27,9 @@ function world(
 						status: 'running',
 					},
 				]
-	const saved = new Map(Object.entries(options.stored ?? {}))
+	const saved = new Map<string, unknown>(
+		Object.entries({ host: 'filetree', ...options.stored })
+	)
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
 	const hostBodyRows: (number | undefined)[] = []
 	on('store.get', (_$, e) => ({ value: saved.get(e.key) }))

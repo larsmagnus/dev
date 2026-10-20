@@ -14,8 +14,8 @@ const paneProps = {
 
 function world(on: On, agents: AgentInfo[]) {
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
+	mock.store(on, { host: 'filetree' })
 	const toasts: string[] = []
-	mock.store(on)
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
 	on('session.id', () => ({ value: 'session-4f2a9c' }))
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))

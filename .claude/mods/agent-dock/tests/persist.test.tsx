@@ -15,7 +15,7 @@ function world(
 	on: On,
 	options: { sessionId: string; stored?: unknown; agents?: AgentInfo[] }
 ) {
-	const saved = new Map<string, unknown>()
+	const saved = new Map<string, unknown>([['host', 'filetree']])
 	if (options.stored) saved.set('sessions', options.stored)
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
 	on('store.get', (_$, e) => ({ value: saved.get(e.key) }))

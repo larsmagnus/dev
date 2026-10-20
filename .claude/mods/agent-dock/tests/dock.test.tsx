@@ -32,7 +32,7 @@ function world(
 ) {
 	mock.env(on, { HOME: '/Users/ada' })
 	const clock = mock.clock(on, { now: 1_800_000_000_000 })
-	mock.store(on)
+	mock.store(on, { host: 'filetree' })
 	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
 	on('session.id', () => ({ value: 'session-4f2a9c' }))
