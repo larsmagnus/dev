@@ -56,6 +56,7 @@ Change Claude's own interface. Shipped as the [larsmagnus](.claude/mods/.claude-
 
 - [agent-dock](.claude/mods/agent-dock/README.md) - Live subagents beside your files in a resizable dock pane
 - [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, saved with thumbnails and refs to re-insert
+- [release-highlights](.claude/mods/release-highlights/README.md) - Changelog highlights band above the prompt after Claude Code updates
 
 ### Themes
 
