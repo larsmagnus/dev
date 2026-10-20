@@ -1,6 +1,7 @@
 export type Category = 'feature' | 'change' | 'breaking' | 'other'
 export type Highlight = { category: Category; text: string }
-type Release = { from: string; to: string; items: Highlight[] }
+/** @public Exported because the plugin validator rejects a non-exported top-level type. */
+export type Release = { from: string; to: string; items: Highlight[] }
 
 declare module 'claude-code' {
 	interface PluginState {
