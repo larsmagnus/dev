@@ -1,0 +1,9 @@
+{
+	"name": "release-highlights",
+	"version": "0.1.0",
+	"description": "Band above the prompt with model-summarised changelog highlights after Claude Code updates",
+	"author": {
+		"name": "Lars Magnus Klavenes"
+	},
+	"types": "./types/index.d.ts"
+}
