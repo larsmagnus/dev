@@ -1,3 +1,7 @@
+<div align="left">
+  <img src="https://raw.githubusercontent.com/larsmagnus/dev/main/public/banner-midnight.png" alt="/dev The supercharged AI toolkit" width="500" height="252" />
+</div>
+
 # larsmagnus/dev
 
 Dev setup, tooling, themes and productivity workflows.
