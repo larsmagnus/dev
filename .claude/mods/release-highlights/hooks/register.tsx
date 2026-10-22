@@ -116,30 +116,30 @@ export const register: Register = (on) => {
 				paddingY={1}
 				gap="xs"
 			>
-				<Text bold>
-					<Text color="claude">release-highlights</Text>{' '}
-					<Text dimColor>{current.from} →</Text>{' '}
-					<Text color="success">{current.to}</Text>{' '}
-					<Link
-						href={`${CHANGELOG_PAGE_URL}#${current.to.replaceAll('.', '-')}`}
-						label="full changelog ↗"
-					/>
-				</Text>
+				<Box justifyContent="space-between">
+					<Text bold>
+						<Text color="claude">release-highlights</Text>{' '}
+						<Text dimColor>{current.from} →</Text>{' '}
+						<Text color="success">{current.to}</Text>{' '}
+						<Link
+							href={`${CHANGELOG_PAGE_URL}#${current.to.replaceAll('.', '-')}`}
+							label="full changelog ↗"
+						/>
+					</Text>
+					<Button key="dismiss" label="x" onPress={dismiss($)} />
+				</Box>
 				{shown.map((item, i) => (
 					<Text key={`highlight-${i}`}>
 						<Text dimColor>[{CATEGORY_LABEL[item.category]}]</Text> {item.text}
 					</Text>
 				))}
-				<Box gap="sm">
-					{hiddenCount > 0 && (
-						<Button
-							key="expand"
-							label={`Show ${hiddenCount} more`}
-							onPress={expand($)}
-						/>
-					)}
-					<Button key="dismiss" label="Dismiss" onPress={dismiss($)} />
-				</Box>
+				{hiddenCount > 0 && (
+					<Button
+						key="expand"
+						label={`Show ${hiddenCount} more`}
+						onPress={expand($)}
+					/>
+				)}
 			</Box>
 		)
 	})
