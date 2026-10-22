@@ -19,7 +19,7 @@ const paneProps = {
 // A short body so details and transcript together outrun the pane: 9 tree rows leave 7 rows under the back button.
 const shortPaneProps = {
 	...paneProps,
-	scroll: { offset: 0, bodyRows: 18 },
+	scroll: { offset: 0, bodyRows: 22 },
 } satisfies RenderPropsOf['Pane']
 
 const threeAgents: AgentInfo[] = [
@@ -224,7 +224,7 @@ test('should scroll back through a transcript when the wheel turns up from its n
 	expect(newest).toContain('Checked module 2')
 	expect(newest).not.toContain('Checked module 1')
 
-	await $.ui.scroll(wheel('filetree', -3, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -3, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const earlier = await shown(ui)
 
@@ -232,7 +232,7 @@ test('should scroll back through a transcript when the wheel turns up from its n
 	expect(earlier).toContain('Checked module 5')
 	expect(earlier).toContain('Checked module 1')
 
-	await $.ui.scroll(wheel('filetree', -50, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -50, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const oldest = await shown(ui)
 	expect(oldest).toContain('Checked module 1')
@@ -247,30 +247,31 @@ test('should leave a transcript unchanged when the wheel turns down at its newes
 	await ui.press({ key: 'open:agent-2' })
 	const before = await shown(ui)
 
-	await $.ui.scroll(wheel('filetree', 3, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', 3, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 
 	const after = await shown(ui)
 	expect(before).toContain('Checked module 2')
 	expect(before).toContain('Checked module 8')
-	expect(before).not.toContain('Status')
+	expect(before).toContain('Status  running')
 	expect(after).toContain('Checked module 2')
 	expect(after).toContain('Checked module 8')
-	expect(after).not.toContain('Status')
+	expect(after).toContain('Status  running')
 	await ui.unmount()
 })
 
-test('should bring the status and id lines into view while the back button stays pinned when the wheel turns up on a long transcript', async ($, on) => {
+test('should bring the id line into view while the back button, status and start stay pinned when the wheel turns up on a long transcript', async ($, on) => {
 	const { clock } = world(on, { 'agent-2': transcriptOf(8) })
 	await startSession($, clock)
 	const ui = await mountPane($, 'filetree', shortPaneProps)
 	await ui.press({ key: 'open:agent-2' })
 	const newest = await shown(ui)
-	expect(newest).not.toContain('Status')
+	expect(newest).toContain('Status  running')
+	expect(newest).toContain('Started ')
 	expect(newest).not.toContain('Id      agent-2')
 	expect(newest).toContain('← Plan Outline the migration')
 
-	await $.ui.scroll(wheel('filetree', -50, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -50, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const drawn = await shown(ui)
 
@@ -301,21 +302,21 @@ test('should move back toward the newest row on the first wheel tick down after 
 	await startSession($, clock)
 	const ui = await mountPane($, 'filetree', shortPaneProps)
 	await ui.press({ key: 'open:agent-2' })
-	await $.ui.scroll(wheel('filetree', -50, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -50, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const atOldest = await shown(ui)
 	expect(atOldest).toContain('Status  running')
-	expect(atOldest).toContain('Checked module 3')
-	expect(atOldest).not.toContain('Checked module 4')
+	expect(atOldest).toContain('Checked module 5')
+	expect(atOldest).not.toContain('Checked module 6')
 
-	await $.ui.scroll(wheel('filetree', 1, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', 1, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const nearer = await shown(ui)
 
-	expect(nearer).not.toContain('Status  running')
+	expect(nearer).toContain('Status  running')
 	expect(nearer).toContain('Id      agent-2')
-	expect(nearer).toContain('Checked module 4')
-	expect(nearer).not.toContain('Checked module 5')
+	expect(nearer).toContain('Checked module 6')
+	expect(nearer).not.toContain('Checked module 7')
 	await ui.unmount()
 })
 
@@ -324,12 +325,12 @@ test('should reset the offset when a transcript is opened and when it is closed'
 	await startSession($, clock)
 	const ui = await mountPane($, 'filetree', shortPaneProps)
 
-	await $.ui.scroll(wheel('filetree', 1, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', 1, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	await ui.press({ key: 'open:agent-2' })
 	expect(await shown(ui)).toContain('Checked module 8')
 
-	await $.ui.scroll(wheel('filetree', -3, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -3, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	expect(await shown(ui)).not.toContain('Checked module 8')
 	await ui.press({ key: 'back' })
@@ -403,8 +404,8 @@ test('should wrap transcript lines and show only the newest rows that fit the pa
 	// 14 body rows: 7 tree rows leave 5 rows under the back button; the scrollbar takes 1 of 21 columns, so at 20 text columns the lines are 1, 3, 2 and 1 rows high, so the 5 newest rows end inside the 3-row line.
 	const ui = await mountPane($, 'filetree', {
 		...shortPaneProps,
-		scroll: { offset: 0, bodyRows: 14 },
-		bodyColumns: 21,
+		scroll: { offset: 0, bodyRows: 18 },
+		bodyColumns: 23,
 	})
 
 	await ui.press({ key: 'open:agent-2' })
@@ -428,8 +429,8 @@ test('should show a line exactly as wide as the text area beside the scrollbar o
 	await startSession($, clock)
 	const ui = await mountPane($, 'filetree', {
 		...shortPaneProps,
-		scroll: { offset: 0, bodyRows: 22 },
-		bodyColumns: 21,
+		scroll: { offset: 0, bodyRows: 26 },
+		bodyColumns: 23,
 	})
 
 	await ui.press({ key: 'open:agent-2' })
@@ -463,7 +464,7 @@ test('should show the newest rows of a message taller than the pane, reach its s
 	expect(newest).not.toContain('…')
 
 	// Far more ticks than the message has hidden rows above: the view stops where its first row leads.
-	await $.ui.scroll(wheel('filetree', -21, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -21, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const start = await shown(ui)
 
@@ -485,8 +486,8 @@ test('should show only the newest rows when the newest line wraps to more rows t
 	// 14 body rows leave 5 rows under the back button: the 4-row line and the last row of the 2-row line before it.
 	const ui = await mountPane($, 'filetree', {
 		...shortPaneProps,
-		scroll: { offset: 0, bodyRows: 14 },
-		bodyColumns: 21,
+		scroll: { offset: 0, bodyRows: 18 },
+		bodyColumns: 23,
 	})
 
 	await ui.press({ key: 'open:agent-2' })
@@ -514,13 +515,13 @@ test('should move the view by exactly one row per wheel tick inside a single lon
 	const rowsOf = async () =>
 		[
 			...(await shown(ui)).matchAll(
-				/"wrap":"truncate-end"[^}]*\},"children":\["([^"]*)"\]/g
+				/"dimColor":false\},"children":\["([^"┃│]+)"\]/g
 			),
 		].map((match) => match[1])
 	const newest = await rowsOf()
 	expect(newest).toHaveLength(7)
 
-	await $.ui.scroll(wheel('filetree', -1, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', -1, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	const oneUp = await rowsOf()
 
@@ -528,7 +529,7 @@ test('should move the view by exactly one row per wheel tick inside a single lon
 	expect(oneUp.slice(1)).toEqual(newest.slice(0, -1))
 	expect(oneUp[0]).not.toEqual(newest[0])
 
-	await $.ui.scroll(wheel('filetree', 1, { column: 5, row: 12 }, 18))
+	await $.ui.scroll(wheel('filetree', 1, { column: 5, row: 12 }, 22))
 	await ui.redraw()
 	expect(await rowsOf()).toEqual(newest)
 	await ui.unmount()

@@ -2,8 +2,9 @@ import type { AgentRow } from '../types'
 
 import { rowTitle } from './activity'
 import type { DockElements } from './elements'
+import { linkified } from './linkify'
 import { drawScrollbar } from './scrollbar'
-import { transcriptRows } from './transcript-rows'
+import { stickyDetails, transcriptRows } from './transcript-rows'
 
 export type TranscriptViewProps = {
 	ui: DockElements
@@ -40,15 +41,19 @@ export const drawTranscript = ({
 				</Text>
 				{row.description !== '' && <Text dimColor> {row.description}</Text>}
 			</Button>
+			{stickyDetails(row, now).map((line) => (
+				<Text key={line} wrap="truncate-end" dimColor>
+					{line}
+				</Text>
+			))}
 			<Box flexDirection="row">
 				<Box flexDirection="column" flexGrow={1}>
 					{all.slice(Math.max(0, end - visibleRows), end).map((shown) => (
-						<Text
-							wrap="truncate-end"
-							dimColor={shown.isDim}
-							color={shown.color}
-						>
-							{shown.text}
+						<Text wrap="truncate-end">
+							<Text dimColor>{shown.gutter}</Text>
+							<Text dimColor={shown.isDim} color={shown.color}>
+								{linkified(ui, shown.text)}
+							</Text>
 						</Text>
 					))}
 				</Box>

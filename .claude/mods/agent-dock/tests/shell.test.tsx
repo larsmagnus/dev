@@ -755,3 +755,45 @@ test("should kill a subagent's shell once its owner completes after a Stop that 
 	)
 	await ui.unmount()
 })
+
+test('should number each transcript line and link the file path in the task', async ($, on) => {
+	const agents: AgentInfo[] = [
+		{
+			id: 'agent-1',
+			type: 'Explore',
+			description: 'Follow the preamble',
+			status: 'running',
+		},
+	]
+	const transcript: SessionMessage[] = [
+		{ role: 'assistant', text: 'Reading the preamble', toolUses: [] },
+		{ role: 'assistant', text: 'Starting the work', toolUses: [] },
+	]
+	const { clock } = world(on, {
+		agents,
+		transcripts: { 'agent-1': transcript },
+	})
+	await startSession($)
+	await $.agent.spawn({
+		tool_use_id: 'toolu-spawn-1',
+		prompt: 'Read /Users/ada/jobs/9d2fd8a7/preamble.md first.',
+		description: 'Follow the preamble',
+		subagentType: 'Explore',
+		provider: { plugin: 'agent-dock', tier: 'user' },
+		parentModel: 'sonnet',
+		background: false,
+		fork: false,
+	})
+	await clock.advance(1000)
+	const ui = await mountPane($)
+
+	await ui.press({ key: 'open:agent-1' })
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain('"1 "')
+	expect(drawn).toContain('"2 "')
+	expect(drawn).toContain(
+		'"href":"file:///Users/ada/jobs/9d2fd8a7/preamble.md"'
+	)
+	await ui.unmount()
+})

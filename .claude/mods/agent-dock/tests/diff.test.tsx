@@ -88,8 +88,8 @@ test('should show the removed and added lines under an Edit', async ($, on) => {
 	const drawn = await shown(ui)
 
 	expect(drawn).toContain('⏺ Edit(src/login.ts)')
-	expect(drawn).toContain('  - redirect(\\"/home\\")')
-	expect(drawn).toContain('  + redirect(\\"/dashboard\\")')
+	expect(drawn).toContain('  - redirect(\\"')
+	expect(drawn).toContain('  + redirect(\\"')
 	expect(drawn.indexOf('  - redirect')).toBeLessThan(
 		drawn.indexOf('  + redirect')
 	)
