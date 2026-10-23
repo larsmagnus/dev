@@ -1,8 +1,9 @@
 import type { SessionMessage, SessionMessagesDeny } from 'claude-code'
 
 import { describeCall, describeEdits, oneLine } from './activity'
+import { describeHandback, describeResult } from './tool-output'
 
-/** Turns an agent's transcript into the lines the pane shows: its prose and its tool calls. */
+/** Turns an agent's transcript into the lines the pane shows: its prose, its tool calls with what they returned, and the report it handed back. */
 export const transcriptLines = (
 	found: SessionMessage[] | SessionMessagesDeny
 ) =>
@@ -15,5 +16,7 @@ export const transcriptLines = (
 				...message.toolUses.flatMap((use) => [
 					describeCall(use.tool, use.input),
 					...describeEdits(use.tool, use.input),
+					...describeResult(use),
+					...describeHandback(use.tool, use.input),
 				]),
 			])

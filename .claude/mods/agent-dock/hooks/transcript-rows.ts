@@ -1,13 +1,8 @@
 import type { AgentRow } from '../types'
 
-import {
-	DIFF_ADDED,
-	DIFF_REMOVED,
-	FINISHED,
-	oneLine,
-	TOOL_MARK,
-} from './activity'
+import { DIFF_ADDED, DIFF_REMOVED, FINISHED, oneLine } from './activity'
 import { formatElapsed } from './format'
+import { RESULT_ERROR_MARK, RESULT_MARK } from './tool-output'
 import { wrapLine } from './wrap-line'
 
 const LABEL_WIDTH = 8
@@ -16,8 +11,8 @@ const REMOVED_COLOR = '#e06c75'
 const ADDED_COLOR = '#98c379'
 const MAX_DETAIL_CHARS = 240
 
-const lineColor = (line: string, toolColor: string) => {
-	if (line.startsWith(TOOL_MARK)) return toolColor
+const lineColor = (line: string) => {
+	if (line.startsWith(RESULT_ERROR_MARK)) return REMOVED_COLOR
 	if (line.startsWith(DIFF_REMOVED)) return REMOVED_COLOR
 	if (line.startsWith(DIFF_ADDED)) return ADDED_COLOR
 	return undefined
@@ -88,8 +83,8 @@ export const transcriptRows = (
 				gutter:
 					part === 0 ? `${index + 1}`.padStart(gutterWidth - 1) + ' ' : blank,
 				text,
-				color: lineColor(line, row.color),
-				isDim: false,
+				color: lineColor(line),
+				isDim: line.startsWith(RESULT_MARK),
 			}))
 		),
 	]

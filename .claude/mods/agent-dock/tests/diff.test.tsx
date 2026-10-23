@@ -212,3 +212,87 @@ test('should colour removed lines red and added lines green', async ($, on) => {
 	)
 	await ui.unmount()
 })
+
+test('should show every line of the report a subagent handed back', async ($, on) => {
+	const clock = world(
+		on,
+		assistant([
+			{
+				tool_use_id: 'toolu-handback-1',
+				tool: 'SubagentHandback',
+				input: {
+					message:
+						'Fixed the redirect.\n\nChanged: src/login.ts\nVerified: login.test.ts passes',
+				},
+			},
+		])
+	)
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain('⏺ SubagentHandback')
+	expect(drawn).toContain('Fixed the redirect.')
+	expect(drawn).toContain('Changed: src/login.ts')
+	expect(drawn).toContain('Verified: login.test.ts passes')
+})
+
+test('should show the first lines of what a call returned, clipped with an ellipsis', async ($, on) => {
+	const clock = world(
+		on,
+		assistant([
+			{
+				tool_use_id: 'toolu-grep-1',
+				tool: 'Grep',
+				input: { pattern: 'redirect' },
+				text: 'src/login.ts:12\nsrc/login.ts:40\nsrc/home.ts:3\nsrc/nav.ts:9',
+			},
+		])
+	)
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain('⎿ src/login.ts:12')
+	expect(drawn).toContain('⎿ src/home.ts:3')
+	expect(drawn).not.toContain('src/nav.ts:9')
+	expect(drawn).toContain('⎿ …')
+})
+
+test('should mark a failed call in red with its error', async ($, on) => {
+	const clock = world(
+		on,
+		assistant([
+			{
+				tool_use_id: 'toolu-bash-1',
+				tool: 'Bash',
+				input: { command: 'pnpm test' },
+				text: 'Exit code 1\nlogin.test.ts failed',
+				isError: true,
+			},
+		])
+	)
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain('✗ Exit code 1')
+	expect(drawn).toContain('"color":"#e06c75"},"children":["  ✗ Exit code 1"]')
+})
+
+test('should not repeat an Edit success message under its diff', async ($, on) => {
+	const clock = world(
+		on,
+		assistant([
+			{
+				tool_use_id: 'toolu-edit-2',
+				tool: 'Edit',
+				input: { file_path: 'src/login.ts', old_string: 'a', new_string: 'b' },
+				text: 'The file src/login.ts has been updated successfully.',
+			},
+		])
+	)
+	const ui = await openTranscript($, clock)
+
+	expect(await shown(ui)).not.toContain('updated successfully')
+})
