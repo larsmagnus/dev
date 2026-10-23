@@ -8,6 +8,18 @@ Format, complexity and duplication checks after every edit. Failures go back to 
 claude plugin install code-quality@larsmagnus
 ```
 
+## Updating
+
+Enable auto-update for `larsmagnus` in `/plugin`.
+
+### Manually updating
+
+```sh
+claude plugin marketplace update larsmagnus
+```
+
+Remember to run `/reload-plugins` after manually updating.
+
 ## Why one entry hook
 
 Claude Code runs matching hooks in parallel. As separate hooks, the analysers could read a file before format rewrites it. One `PostToolUse` entry runs format, complexity and duplication in that order. It costs about 0.2s per edit.

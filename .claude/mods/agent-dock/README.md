@@ -13,7 +13,17 @@ claude plugin marketplace add larsmagnus/dev
 claude plugin install agent-dock@larsmagnus --scope user
 ```
 
-Edits apply with `/reload-plugins`. No reinstall needed.
+## Updating
+
+Enable auto-update for `larsmagnus` in `/plugin`.
+
+### Manually updating
+
+```sh
+claude plugin marketplace update larsmagnus
+```
+
+Remember to run `/reload-plugins` after manually updating.
 
 ## Load order
 

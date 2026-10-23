@@ -72,9 +72,10 @@
 		},
 		"larsmagnus": {
 			"source": {
-				"source": "github",
-				"repo": "larsmagnus/dev"
-			}
+				"source": "directory",
+				"path": "/Users/larsmagnus/sites/dev"
+			},
+			"autoUpdate": true
 		}
 	},
 	"pluginConfigs": {

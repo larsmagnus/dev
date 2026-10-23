@@ -28,8 +28,21 @@ claude plugin install code-quality@larsmagnus
 claude plugin install docs-review@larsmagnus
 ```
 
-Not currently versioned, so every push to main updates the plugins.
 Requires Node 22.18 or newer.
+
+### Updating
+
+The plugins are not versioned. Every commit on main counts as a new version.
+
+Enable auto-update for `larsmagnus` in `/plugin`.
+
+#### Manually updating
+
+```
+claude plugin marketplace update larsmagnus
+```
+
+Remember to run `/reload-plugins` after manually updating.
 
 ### Settings
 

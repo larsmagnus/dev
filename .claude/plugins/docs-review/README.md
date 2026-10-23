@@ -8,6 +8,18 @@ Flags new inline comments for review by the `docs-architect` agent, and a `/docs
 claude plugin install docs-review@larsmagnus
 ```
 
+## Updating
+
+Enable auto-update for `larsmagnus` in `/plugin`.
+
+### Manually updating
+
+```sh
+claude plugin marketplace update larsmagnus
+```
+
+Remember to run `/reload-plugins` after manually updating.
+
 ## How it works
 
 The hook runs after every `Edit` and `Write`. For an edit, only comments the new text adds or changes count. A full-file rescan would flag existing, already reviewed comments on every touch.
