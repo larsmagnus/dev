@@ -3,7 +3,6 @@
 	"workspaces": {
 		".": {
 			"entry": [
-				"**/*.test.{ts,tsx}",
 				".claude/plugins/*.test.mts",
 				".claude/mods/*/tests/*.test.{ts,tsx}",
 				".claude/agents/**/scripts/*.ts",
