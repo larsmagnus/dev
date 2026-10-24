@@ -87,7 +87,8 @@ test('should show the removed and added lines under an Edit', async ($, on) => {
 
 	const drawn = await shown(ui)
 
-	expect(drawn).toContain('⏺ Edit(src/login.ts)')
+	expect(drawn).toContain('"bold":true},"children":["Edit"]')
+	expect(drawn).toContain('(src/login.ts)')
 	expect(drawn).toContain('  - redirect(\\"')
 	expect(drawn).toContain('  + redirect(\\"')
 	expect(drawn.indexOf('  - redirect')).toBeLessThan(
@@ -150,8 +151,10 @@ test('should add no diff lines for a Write or a Read', async ($, on) => {
 
 	const drawn = await shown(ui)
 
-	expect(drawn).toContain('⏺ Write(src/logout.ts)')
-	expect(drawn).toContain('⏺ Read(src/login.ts)')
+	expect(drawn).toContain('"children":["Write"]')
+	expect(drawn).toContain('(src/logout.ts)')
+	expect(drawn).toContain('"children":["Read"]')
+	expect(drawn).toContain('(src/login.ts)')
 	expect(drawn).not.toContain('  - ')
 	expect(drawn).not.toContain('  + ')
 	expect(drawn).not.toContain('export const out = 1')
@@ -231,7 +234,7 @@ test('should show every line of the report a subagent handed back', async ($, on
 
 	const drawn = await shown(ui)
 
-	expect(drawn).toContain('⏺ SubagentHandback')
+	expect(drawn).toContain('"children":["SubagentHandback"]')
 	expect(drawn).toContain('Fixed the redirect.')
 	expect(drawn).toContain('Changed: src/login.ts')
 	expect(drawn).toContain('Verified: login.test.ts passes')
@@ -276,8 +279,8 @@ test('should mark a failed call in red with its error', async ($, on) => {
 
 	const drawn = await shown(ui)
 
-	expect(drawn).toContain('✗ Exit code 1')
-	expect(drawn).toContain('"color":"#e06c75"},"children":["  ✗ Exit code 1"]')
+	expect(drawn).toContain('⎿ Exit code 1')
+	expect(drawn).toContain('"color":"#e06c75"},"children":["  ⎿ Exit code 1"]')
 })
 
 test('should not repeat an Edit success message under its diff', async ($, on) => {
@@ -295,4 +298,149 @@ test('should not repeat an Edit success message under its diff', async ($, on) =
 	const ui = await openTranscript($, clock)
 
 	expect(await shown(ui)).not.toContain('updated successfully')
+})
+
+test('should colour API failures red and leave ordinary prose uncoloured', async ($, on) => {
+	const clock = world(on, [
+		{
+			role: 'assistant',
+			text: "You've hit your session limit · resets 6am (Australia/Sydney)",
+			toolUses: [],
+		},
+		{ role: 'assistant', text: 'API Error: 529 overloaded', toolUses: [] },
+		{ role: 'assistant', text: 'Patching the redirect', toolUses: [] },
+	])
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain(
+		'"dimColor":false,"color":"#e06c75"},"children":["You\'ve hit your session limit'
+	)
+	expect(drawn).toContain(
+		'"dimColor":false,"color":"#e06c75"},"children":["API Error: 529 overloaded"]'
+	)
+	expect(drawn).not.toContain(
+		'"dimColor":false,"color":"#e06c75"},"children":["Patching the redirect"]'
+	)
+	await ui.unmount()
+})
+
+test('should draw a call with a bullet in the agent colour, a bold name and dim arguments', async ($, on) => {
+	const clock = world(
+		on,
+		assistant([
+			{
+				tool_use_id: 'toolu-read-2',
+				tool: 'Read',
+				input: { file_path: 'src/login.ts' },
+			},
+		])
+	)
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	expect(drawn).toMatch(/"color":"#[0-9a-f]{6}"\},"children":\["⏺ "\]/i)
+	expect(drawn).toContain('"bold":true},"children":["Read"]')
+	expect(drawn).toContain('"dimColor":true},"children":["(src/login.ts)"]')
+	await ui.unmount()
+})
+
+test('should put a blank row before every call except the first line', async ($, on) => {
+	const clock = world(
+		on,
+		assistant([
+			{
+				tool_use_id: 'toolu-read-3',
+				tool: 'Read',
+				input: { file_path: 'src/login.ts' },
+			},
+			{
+				tool_use_id: 'toolu-read-4',
+				tool: 'Read',
+				input: { file_path: 'src/home.ts' },
+			},
+		])
+	)
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	// Prose is line 1, so both calls get a spacer; a leading call would not.
+	expect(drawn.split('"dimColor":true},"children":["  "]}]}').length - 1).toBe(
+		2
+	)
+	await ui.unmount()
+})
+
+test('should not put a blank row above a call that is the first line', async ($, on) => {
+	const clock = world(on, [
+		{
+			role: 'assistant',
+			text: '',
+			toolUses: [
+				{
+					tool_use_id: 'toolu-read-5',
+					tool: 'Read',
+					input: { file_path: 'src/login.ts' },
+				},
+			],
+		},
+	])
+	const ui = await openTranscript($, clock)
+
+	expect(await shown(ui)).not.toContain('"children":[" "]')
+	await ui.unmount()
+})
+
+const longCommand = `pnpm exec vitest run ${'src/session/login.test.ts '.repeat(6)}--reporter=verbose --tail-marker-xyz`
+const longCall = assistant([
+	{
+		tool_use_id: 'toolu-bash-2',
+		tool: 'Bash',
+		input: { command: longCommand },
+	},
+])
+
+test('should wrap a long call across rows by default', async ($, on) => {
+	const clock = world(on, longCall)
+	const ui = await openTranscript($, clock)
+
+	const drawn = await shown(ui)
+
+	expect(drawn).toContain('⊟')
+	expect(drawn).toContain('tail-marker-xyz')
+	await ui.unmount()
+})
+
+test('should collapse long calls to one row when the collapse button is pressed', async ($, on) => {
+	const clock = world(on, longCall)
+	const ui = await openTranscript($, clock)
+	const wrapped = await shown(ui)
+
+	await ui.press({ key: 'collapse' })
+	const collapsed = await shown(ui)
+
+	expect(collapsed).toContain('⊞')
+	expect(collapsed).not.toContain('⊟')
+	expect(wrapped).toContain('"dimColor":true},"children":["  "]}]}')
+	expect(wrapped).not.toContain(longCommand)
+	expect(collapsed).not.toContain('"dimColor":true},"children":["  "]}]}')
+	expect(collapsed).toContain(longCommand)
+	await ui.unmount()
+})
+
+test('should restore the wrapped rows when the collapse button is pressed again', async ($, on) => {
+	const clock = world(on, longCall)
+	const ui = await openTranscript($, clock)
+
+	await ui.press({ key: 'collapse' })
+	await ui.press({ key: 'collapse' })
+
+	const restored = await shown(ui)
+	expect(restored).toContain('⊟')
+	expect(restored).toContain('tail-marker-xyz')
+	expect(restored).toContain('"dimColor":true},"children":["  "]}]}')
+	await ui.unmount()
 })

@@ -1,9 +1,9 @@
 import type { AgentRow } from '../types'
 
-import { rowTitle } from './activity'
 import type { DockElements } from './elements'
-import { linkified } from './linkify'
 import { drawScrollbar } from './scrollbar'
+import { drawTranscriptHeader } from './transcript-header'
+import { drawTranscriptRow } from './transcript-row-view'
 import { stickyDetails, transcriptRows } from './transcript-rows'
 
 export type TranscriptViewProps = {
@@ -14,6 +14,8 @@ export type TranscriptViewProps = {
 	offset: number
 	visibleRows: number
 	columns: number
+	isCollapsed: boolean
+	toggleCollapsed: () => void
 	select: (id: string | null) => () => void
 }
 
@@ -26,21 +28,24 @@ export const drawTranscript = ({
 	offset,
 	visibleRows,
 	columns,
+	isCollapsed,
+	toggleCollapsed,
 	select,
 }: TranscriptViewProps) => {
-	const { Box, Text, Button } = ui
-	const all = transcriptRows(row, lines, now, columns)
+	const { Box, Text } = ui
+	const all = transcriptRows(row, lines, now, columns, isCollapsed)
 	const hiddenAbove = Math.max(0, all.length - visibleRows)
 	const end = all.length - Math.min(offset, hiddenAbove)
 
 	return (
 		<Box flexDirection="column" flexGrow={1} overflow="hidden">
-			<Button key="back" plain onPress={select(null)}>
-				<Text color={row.color} bold>
-					← {rowTitle(row)}
-				</Text>
-				{row.description !== '' && <Text dimColor> {row.description}</Text>}
-			</Button>
+			{drawTranscriptHeader({
+				ui,
+				row,
+				isCollapsed,
+				toggleCollapsed,
+				back: select(null),
+			})}
 			{stickyDetails(row, now).map((line) => (
 				<Text key={line} wrap="truncate-end" dimColor>
 					{line}
@@ -48,14 +53,9 @@ export const drawTranscript = ({
 			))}
 			<Box flexDirection="row">
 				<Box flexDirection="column" flexGrow={1}>
-					{all.slice(Math.max(0, end - visibleRows), end).map((shown) => (
-						<Text wrap="truncate-end">
-							<Text dimColor>{shown.gutter}</Text>
-							<Text dimColor={shown.isDim} color={shown.color}>
-								{linkified(ui, shown.text)}
-							</Text>
-						</Text>
-					))}
+					{all
+						.slice(Math.max(0, end - visibleRows), end)
+						.map((shown) => drawTranscriptRow(ui, shown))}
 				</Box>
 				{drawScrollbar({
 					ui,

@@ -21,6 +21,8 @@ export type SplitPaneProps = {
 	treeRows: number
 	offset: number
 	archive: ArchiveControls
+	isCollapsed: boolean
+	toggleCollapsed: () => void
 	select: (id: string | null) => () => void
 	header: RenderNode
 }
@@ -37,6 +39,8 @@ export const splitPane = ({
 	treeRows,
 	offset,
 	archive,
+	isCollapsed,
+	toggleCollapsed,
 	select,
 	header,
 }: SplitPaneProps) => {
@@ -54,6 +58,8 @@ export const splitPane = ({
 							offset,
 							visibleRows: visibleTranscriptRows(bodyRows, treeRows),
 							columns: bodyColumns - SCROLLBAR_COLUMNS,
+							isCollapsed,
+							toggleCollapsed,
 							select,
 						})
 					: drawAgentList({

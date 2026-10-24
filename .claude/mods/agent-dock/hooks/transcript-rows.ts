@@ -1,22 +1,14 @@
 import type { AgentRow } from '../types'
 
-import { DIFF_ADDED, DIFF_REMOVED, FINISHED, oneLine } from './activity'
+import { FINISHED, TOOL_MARK, oneLine } from './activity'
 import { formatElapsed } from './format'
-import { RESULT_ERROR_MARK, RESULT_MARK } from './tool-output'
+import { rowParts } from './transcript-parts'
+import type { RowPart } from './transcript-parts'
 import { wrapLine } from './wrap-line'
 
 const LABEL_WIDTH = 8
 const STICKY_ROWS = 2
-const REMOVED_COLOR = '#e06c75'
-const ADDED_COLOR = '#98c379'
 const MAX_DETAIL_CHARS = 240
-
-const lineColor = (line: string) => {
-	if (line.startsWith(RESULT_ERROR_MARK)) return REMOVED_COLOR
-	if (line.startsWith(DIFF_REMOVED)) return REMOVED_COLOR
-	if (line.startsWith(DIFF_ADDED)) return ADDED_COLOR
-	return undefined
-}
 
 const clip = (text: string) => {
 	const oneLined = oneLine(text)
@@ -59,33 +51,37 @@ const scrollingDetails = (row: AgentRow) => {
 export const visibleTranscriptRows = (bodyRows: number, treeRows: number) =>
 	Math.max(1, bodyRows - treeRows - 2 - STICKY_ROWS)
 
-/** Every row the open agent shows, details first: scrolling moves by these rows, never by whole messages. Each transcript line leads with its number, so the order of the agent's steps reads at a glance. */
+/** Every row the open agent shows, details first: scrolling moves by these rows, never by whole messages. Each transcript line leads with its number, so the order of the agent's steps reads at a glance; a call gets a blank row above it, and a collapsed call keeps to one row. */
 export const transcriptRows = (
 	row: AgentRow,
 	lines: string[],
 	now: number,
-	columns: number
+	columns: number,
+	isCollapsed = false
 ) => {
 	const gutterWidth = `${lines.length}`.length + 1
 	const blank = ' '.repeat(gutterWidth)
 
 	return [
 		...scrollingDetails(row).flatMap((line) =>
-			wrapLine(line, columns).map((text) => ({
-				gutter: '',
-				text,
-				color: undefined,
-				isDim: true,
-			}))
+			wrapLine(line, columns).map((text) => {
+				const parts: RowPart[] = [{ text, isDim: true }]
+
+				return { gutter: '', parts }
+			})
 		),
-		...lines.flatMap((line, index) =>
-			wrapLine(line, columns - gutterWidth).map((text, part) => ({
+		...lines.flatMap((line, index) => {
+			const isCall = line.startsWith(TOOL_MARK)
+			const texts =
+				isCall && isCollapsed ? [line] : wrapLine(line, columns - gutterWidth)
+			const spacer = isCall && !isCollapsed && index > 0
+			const rows = texts.map((text, part) => ({
 				gutter:
 					part === 0 ? `${index + 1}`.padStart(gutterWidth - 1) + ' ' : blank,
-				text,
-				color: lineColor(line),
-				isDim: line.startsWith(RESULT_MARK),
+				parts: rowParts(line, text, part, row.color),
 			}))
-		),
+
+			return spacer ? [{ gutter: blank, parts: [] }, ...rows] : rows
+		}),
 	]
 }

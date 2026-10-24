@@ -249,7 +249,8 @@ test('should open the transcript on pressing a row and return to the list on bac
 	await ui.press({ key: 'open:agent-1' })
 	const opened = await shown(ui)
 	expect(opened).toContain('Checking the login flow')
-	expect(opened).toContain('⏺ Read(src/login.ts)')
+	expect(opened).toContain('"children":["Read"]')
+	expect(opened).toContain('(src/login.ts)')
 	expect(opened).toContain(FILETREE_TEXT)
 
 	await ui.press({ key: 'back' })

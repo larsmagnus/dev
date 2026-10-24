@@ -19,7 +19,12 @@ declare module 'claude-code' {
 	interface PluginState {
 		'agent-dock': {
 			agents: AgentRow[]
-			view: { selected: string | null; offset: number; isArchiveOpen?: boolean }
+			view: {
+				selected: string | null
+				offset: number
+				isArchiveOpen?: boolean
+				isCollapsed?: boolean
+			}
 			share: number
 			shimmer: number
 			layout: 'split' | 'tab'

@@ -150,16 +150,28 @@ const shimmerStep = async ($: EngineInterface) => {
 /** Reads the agents and, when one is open, its transcript lines. */
 const readView = async ($: EngineInterface) => {
 	const rows = await read($, agents)
-	const { selected, offset, isArchiveOpen = false } = await read($, view)
+	const {
+		selected,
+		offset,
+		isArchiveOpen = false,
+		isCollapsed = false,
+	} = await read($, view)
 	const openRow = rows.find((row) => row.id === selected)
-	if (!openRow) return { rows, offset, isArchiveOpen, opened: undefined }
+	if (!openRow)
+		return { rows, offset, isArchiveOpen, isCollapsed, opened: undefined }
 
 	// A shell has no transcript of its own to read.
 	const lines =
 		openRow.kind === 'shell'
 			? []
 			: transcriptLines(await $.session.messages({ agentId: openRow.id }))
-	return { rows, offset, isArchiveOpen, opened: { row: openRow, lines } }
+	return {
+		rows,
+		offset,
+		isArchiveOpen,
+		isCollapsed,
+		opened: { row: openRow, lines },
+	}
 }
 
 /** Moves agent-dock between the host pane and a pane of its own, and keeps the choice; with no host pane there is nothing to move between. */
@@ -222,6 +234,12 @@ const drawAgents = async (
 					},
 			{ node: tree, rows: treeRows }
 		),
+		toggleCollapsed: () =>
+			void update($, view, (current) => ({
+				...current,
+				offset: 0,
+				isCollapsed: !current.isCollapsed,
+			})),
 		select: (id) => () =>
 			void update($, view, (current) => ({
 				...current,
@@ -380,7 +398,7 @@ export const register: Register = (on, options) => {
 	// Wheel ticks over the agent list scroll it; the rest of the pane, the host's tree, keeps its own scrolling.
 	on('ui.scroll', { component: 'Pane' }, async ($, e, next) => {
 		const panes = { host: await read($, host), own: OWN_PANE }
-		const { rows, opened, isArchiveOpen } = await readView($)
+		const { rows, opened, isArchiveOpen, isCollapsed } = await readView($)
 		if (rows.length === 0 || !isListScroll(e, panes, await read($, share)))
 			return next(e)
 
@@ -388,8 +406,8 @@ export const register: Register = (on, options) => {
 		const hiddenAbove = opened
 			? Math.max(
 					0,
-					transcriptRows(opened.row, opened.lines, 0, columns).length -
-						visibleRows
+					transcriptRows(opened.row, opened.lines, 0, columns, isCollapsed)
+						.length - visibleRows
 				)
 			: 0
 		const count = opened
