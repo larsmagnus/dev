@@ -1,6 +1,6 @@
 ---
-name: docs
-description: Review docs and inline comments against CLAUDE.md via the docs-architect agent - the current diff, a PR number, a branch/commit, or a path. Reports findings by default; pass --fix to apply them directly. Use when the user wants a docs or comment review, invokes /docs, or asks to check comment/doc quality.
+name: check
+description: Review docs and inline comments against CLAUDE.md via the docs-architect agent - the current diff, a PR number, a branch/commit, or a path. Reports findings by default; pass --fix to apply them directly. Use when the user wants a docs or comment review, invokes /docs-review:check, or asks to check comment/doc quality.
 argument-hint: '[target] [--fix] - target is a path, branch/commit, or PR number; nothing reviews the current diff, report-only'
 agent: docs-review:docs-architect
 context: fork

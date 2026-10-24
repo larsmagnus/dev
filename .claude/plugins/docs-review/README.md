@@ -1,6 +1,6 @@
 # docs-review
 
-Flags new inline comments for review by the `docs-architect` agent, and a `/docs` skill for on-demand reviews.
+Flags new inline comments for review by the `docs-architect` agent, and a `/docs-review:check` skill for on-demand reviews.
 
 ## Install
 
