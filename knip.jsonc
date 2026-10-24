@@ -6,6 +6,8 @@
 				".claude/plugins/*.test.mts",
 				".claude/mods/*/tests/*.test.{ts,tsx}",
 				".claude/agents/**/scripts/*.ts",
+				// Run by the mod and by launchd, never imported.
+				".claude/mods/*/scripts/run.ts",
 				// Linked into each script plugin as its SessionStart installer.
 				".claude/plugins/shared/*.mjs",
 				// Mod modules are loaded by path from JSX, never imported.

@@ -1,0 +1,8 @@
+{
+	"name": "feedback-loop",
+	"description": "Queues finished sessions, reviews them in the background on a schedule, and shows the suggestions pending review in a pane",
+	"author": {
+		"name": "Lars Magnus Klavenes"
+	},
+	"types": "./types/index.d.ts"
+}

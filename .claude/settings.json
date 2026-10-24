@@ -61,7 +61,8 @@
 		"attachments@larsmagnus": true,
 		"code-quality@larsmagnus": true,
 		"release-highlights@larsmagnus": true,
-		"docs-review@larsmagnus": true
+		"docs-review@larsmagnus": true,
+		"feedback-loop@larsmagnus": true
 	},
 	"extraKnownMarketplaces": {
 		"claude-code-filetree": {
