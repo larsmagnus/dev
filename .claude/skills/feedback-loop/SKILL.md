@@ -14,6 +14,10 @@ The purpose is to improve **how Claude works** over time, not to review code. Fi
 
 This runs forked, so there's no inherited conversation history — Phase 1's transcript read is what supplies it, not context. `AskUserQuestion` is unavailable forked; the one place this skill would use it (an ambiguous comment) instead proceeds on the likelier reading and says so in `Verdict`.
 
+## Ledger
+
+The `feedback-loop` mod keeps a ledger of suggestions at `~/.claude/feedback-loop/suggestions.jsonl` (one JSON object per line, with `key`, `status`, `finding`) and runs this method in the background over queued sessions. Read it before Phase 2. Don't re-report a lesson already `pending` or `declined`; note that it recurred instead. A lesson marked `applied` that happened again is a finding in itself: the fix didn't hold.
+
 ## Orientation
 
 - **Process over product.** _Why_ a mistake happened matters more than the mistake.
@@ -51,6 +55,7 @@ Remember that you can access all `~/.claude` files, to review logs, exchange his
 - **Tool/skill usage:** used well, skipped when helpful, or used unnecessarily?
 - **Clarifying questions:** well-timed, missing, or over-used?
 - **Scope:** stayed on task or drifted?
+- **Repetition:** work the user asked for more than once or ran by hand that a mechanism could trigger?
 
 ### With a comment
 
@@ -101,6 +106,14 @@ With a comment: comment-related findings lead, then a short `Also observed` sect
 - `Reference` — doc/file to `@import` rather than duplicate or miss
 - `Docs` — new/updated inline comments, T/JSDoc, or README content
 - `Feedback Loop` — improvement to this skill
+- `Mod` — panel, band, status line, slash command or tool-call hook inside Claude Code, for what a rule can't enforce or show
+- `Plugin` — hook, script or agent bundle shipped through the marketplace; prefer it to a rule when the work is deterministic
+- `Eval` — a plugin eval suite, so a skill, prompt or agent regression is caught instead of rediscovered
+- `Loop` — a recurring prompt inside a running session; stops with the session
+- `Schedule` — a cloud routine; runs unattended but can't see local files or transcripts
+- `Cron` — a local scheduled job; unattended, but can read local state
+
+For repeated work, suggest the lightest mechanism that fits its trigger and data: `Plugin` or `Mod` when a session event triggers it, `Loop` for polling within one session, `Cron` for unattended work on local files, `Schedule` only when nothing local is needed.
 
 NOTE: changes to how Claude approaches work (planning, investigation, verification, questions) must be persisted in one of the above.
 
