@@ -1,0 +1,35 @@
+{
+	"name": "larsmagnus-dev-theme",
+	"displayName": "larsmagnus/dev dark",
+	"description": "Dark navy theme based on One Dark Pro Darker",
+	"publisher": "larsmagnus",
+	"author": "Lars Magnus Klavenes <larsmagnus@gmail.com> (https://larsmagnus.co)",
+	"license": "MIT",
+	"version": "1.0.0",
+	"private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/larsmagnus/dev",
+		"directory": "packages/vscode/theme"
+	},
+	"engines": {
+		"vscode": "^1.101.0"
+	},
+	"categories": [
+		"Themes"
+	],
+	"contributes": {
+		"themes": [
+			{
+				"label": "larsmagnus/dev dark",
+				"uiTheme": "vs-dark",
+				"path": "./themes/larsmagnus-dev-dark.json"
+			}
+		]
+	},
+	"scripts": {
+		"package": "pnpm dlx @vscode/vsce@3.9.2 package --no-dependencies",
+		"screenshot": "scripts/screenshot.sh",
+		"install:vscode": "pnpm package && code --install-extension larsmagnus-dev-theme-$npm_package_version.vsix --force"
+	}
+}

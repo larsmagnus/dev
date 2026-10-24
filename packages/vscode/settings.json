@@ -1,15 +1,15 @@
 {
-	"workbench.colorTheme": "One Dark Pro Darker",
+	"workbench.colorTheme": "larsmagnus/dev dark",
 	"editor.wordWrap": "off",
 	// Less chonky scroll bars
 	"editor.scrollbar.verticalScrollbarSize": 8,
 	"editor.scrollbar.horizontalScrollbarSize": 8,
-	"editor.inlineSuggest.enabled": true,
+	"editor.inlineSuggest.enabled": false,
 	"editor.renderWhitespace": "none",
 	"editor.fontSize": 14,
 	// https://monaspace.githubnext.com/
 	"editor.fontFamily": "'Monaspace Neon Var', monospace",
-	"editor.fontLigatures": "'calt', 'liga', 'ss01', 'ss02', 'ss03', 'ss04', 'ss05', 'ss06', 'ss07', 'ss08', 'ss09'",
+	"editor.fontLigatures": "'calt', 'liga', 'ss03', 'ss06', 'ss07', 'ss08', 'ss09'",
 	"editor.fontVariations": "'wght' 350, 'wdth' 100",
 	"editor.lineHeight": 1.6,
 	"editor.lineNumbers": "on",
@@ -66,31 +66,8 @@
 	"[shellscript]": {
 		"editor.defaultFormatter": "oxc.oxc-vscode"
 	},
-	// Theme overrides
-	"workbench.colorCustomizations": {
-		"editor.background": "#131927",
-		"editorLineNumber.foreground": "#fff2",
-		"editor.lineHighlightBackground": "#ffffff09",
-		"sideBar.background": "#131927",
-		"sideBarSectionHeader.background": "#070f1c",
-		"dropdown.background": "#070f1c",
-		"activityBar.background": "#070f1c",
-		"editorGroupHeader.tabsBackground": "#131927",
-		"tab.activeBackground": "#070f1c",
-		"tab.unfocusedActiveBackground": "#131927",
-		"tab.inactiveBackground": "#131927",
-		"panel.background": "#131927",
-		"panel.border": "#070f1c",
-		"panelSectionHeader.background": "#131927",
-		"statusBar.background": "#070f1c",
-		"terminal.background": "#070f1c",
-		// Search / quickInput
-		"quickInput.background": "#070f1c",
-		"quickInputList.focusBackground": "#6dfdba33",
-		"quickInputList.focusForeground": "#fff",
-		// The topmost bar background
-		"titleBar.activeBackground": "#070f1c",
-		"input.background": "#070f1c"
+	"[mdx]": {
+		"editor.wordWrap": "bounded"
 	},
 	"zenMode.fullScreen": false,
 	"zenMode.centerLayout": false,
@@ -133,7 +110,7 @@
 	"files.associations": {
 		"*.css": "tailwindcss"
 	},
-	"terminal.external.osxExec": "Warp.app",
+	"terminal.external.osxExec": "Ghostty.app",
 	// Don't annoy me when deleting or moving things
 	"explorer.confirmDelete": false,
 	"explorer.confirmDragAndDrop": false,
@@ -146,10 +123,47 @@
 	"accessibility.signals.lineHasError": {
 		"sound": "off"
 	},
-	// Remove the search bar + prev/next arrows at the top
-	// Just use cmd+p, cmd+shift+p, cmd+z, cmd+shift+z instead
-	"window.commandCenter": false,
-	"terminal.integrated.env.osx": {},
+	// commandCenter toggles the search bar + prev/next arrows at the top
+	// Can use cmd+p, cmd+shift+p, cmd+z, cmd+shift+z hotkeys
+	"window.commandCenter": true,
+	"terminal.integrated.env.osx": {
+		"CW_NEW_SESSION": "1"
+	},
 	// The schema is only needed when editing externally
-	"$schema": "vscode://schemas/settings/user"
+	"$schema": "vscode://schemas/settings/user",
+	"typescript.preferences.importModuleSpecifier": "non-relative",
+	"javascript.preferences.importModuleSpecifier": "non-relative",
+	"workbench.editorAssociations": {
+		"*.svg": "default",
+		"*.md": "punchdown.markdownEditor"
+	},
+	"github.copilot.enable": {
+		"markdown": true
+	},
+	"typescript.preferences.preferTypeOnlyAutoImports": true,
+	"terminal.integrated.defaultProfile.osx": "zsh",
+	"redhat.telemetry.enabled": false,
+	"chat.agentsControl.enabled": "hidden",
+	"workbench.editor.empty.hint": "hidden",
+	"explorer.confirmPasteNative": false,
+	"yaml.disableSchemaDetection": [
+		"**/docker-compose.yml",
+		"**/docker-compose.yaml",
+		"**/docker-compose.*.yml",
+		"**/docker-compose.*.yaml",
+		"**/compose.yml",
+		"**/compose.yaml",
+		"**/compose.*.yml",
+		"**/compose.*.yaml",
+		"**/.github/workflows/*.yml",
+		"**/.github/workflows/*.yaml",
+		"**/.gitea/workflows/*.yml",
+		"**/.gitea/workflows/*.yaml",
+		"**/.forgejo/workflows/*.yml",
+		"**/.forgejo/workflows/*.yaml"
+	],
+	"editorMarkdownNotes.hideNav": true,
+	"files.trimTrailingWhitespace": true,
+	"files.insertFinalNewline": true,
+	"editorMarkdownNotes.centerContent": true
 }

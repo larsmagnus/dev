@@ -10,7 +10,7 @@ Dev setup, tooling, themes and productivity workflows.
 
 - [`root`](./packages/root/) - root config, including terminal and shell setup
 - [`scripts`](./packages/scripts/) - dev setup, config and productivity scripts
-- [`vscode`](./packages/vscode/) - vscode user settings, extensions and themes
+- [`vscode`](./packages/vscode/) - vscode settings, keybindings, extensions and the larsmagnus/dev dark theme
 - [`obsidian`](./packages/obsidian/) - obsidian config, templates and theming
 
 ## Claude Code
@@ -84,22 +84,60 @@ Make them easy and predictable to use for humans and agents.
 Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/marketplace.json) plugin marketplace.
 
 - [agent-dock](.claude/mods/agent-dock/README.md) - Live subagents beside your files in a resizable dock pane
+
+  ![Mod panel with agent-dock](.claude/mods/agent-dock/larsmagnus-agent-dock.png)
+
 - [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, saved with thumbnails and refs to re-insert
+
+  ![Mod panel with attachments](.claude/mods/attachments/larsmagnus-attachments.png)
+
 - [release-highlights](.claude/mods/release-highlights/README.md) - Changelog highlights band above the prompt after Claude Code updates
+
+  ![Band above the prompt with release-highlights](.claude/mods/release-highlights/larsmagnus-release-highlights.png)
 
 ### Themes
 
 - [dark-terminal-dock](.claude/themes/dark-terminal-dock.json) - Dark base tuned to match the terminal dock
 
+## VS Code
+
+### Theme
+
+![larsmagnus/dev dark in VS Code](packages/vscode/theme/screenshot.png)
+
+[larsmagnus/dev dark](./packages/vscode/theme/) - One Dark Pro Darker flattened into a standalone navy theme.
+
+```sh
+cd packages/vscode/theme && pnpm install:vscode
+```
+
+Reload VS Code and pick `larsmagnus/dev dark` in the color theme picker.
+
+### Settings
+
+- [settings.json](packages/vscode/settings.json) - Editor, terminal and UI settings, symlinked into VS Code's user directory
+
+### Keybindings
+
+- [keybindings.json](packages/vscode/keybindings.json) - Custom keyboard shortcuts
+
+### Extensions
+
+- [Extension list](packages/vscode/README.md#extensions) - Extensions I use
+
+### Fonts
+
+[Monaspace](https://monaspace.githubnext.com/) in the editor, terminal and UI. The UI fonts need the `drcika.apc-extension` extension.
+
 ---
 
-### Symlinks
+## Symlinks
 
-[`CLAUDE.md`](./CLAUDE.md) and everything in [`.claude/`](./.claude/) are symlinked into `~/.claude/` to track my global setup.
+Config in this repo is symlinked into place to track my live setup. Add new config here rather than in the live location directly, then symlink.
 
-Add new Claude config in this repo rather than in `~/.claude/` directly, then symlink.
+### Claude Code
 
-### Restoring symlinks
+[`CLAUDE.md`](./CLAUDE.md) and everything in [`.claude/`](./.claude/) are symlinked into `~/.claude/`.
 
 If you clone this repo fresh, re-create the symlinks:
 
@@ -109,6 +147,18 @@ for entry in .claude/*; do
   ln -sfn "$(pwd)/$entry" ~/.claude/"$(basename "$entry")"
 done
 ```
+
+### VS Code
+
+[`settings.json`](./packages/vscode/settings.json) and [`keybindings.json`](./packages/vscode/keybindings.json) are symlinked into VS Code's user directory. On macOS:
+
+```sh
+user="$HOME/Library/Application Support/Code/User"
+ln -sf "$(pwd)/packages/vscode/settings.json" "$user/settings.json"
+ln -sf "$(pwd)/packages/vscode/keybindings.json" "$user/keybindings.json"
+```
+
+See [`packages/vscode`](./packages/vscode/README.md#syncing-vscode-settingsjson-to-github) for Windows and Linux paths.
 
 ---
 
