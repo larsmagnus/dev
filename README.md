@@ -23,6 +23,7 @@ The setup I use every day for work.
 claude plugin marketplace add larsmagnus/dev
 claude plugin install agent-dock@larsmagnus
 claude plugin install attachments@larsmagnus
+claude plugin install feedback-loop@larsmagnus
 claude plugin install release-highlights@larsmagnus
 claude plugin install code-quality@larsmagnus
 claude plugin install docs-review@larsmagnus
@@ -59,6 +60,7 @@ Do as much deterministic work as possible with hooks.
 
 Prefer deterministic work in hooks, linting and formatting before rules.
 
+- [claude-extensions](.claude/rules/claude-extensions.md) - Naming and layout for skills, plugins and mods
 - [react-quality](.claude/rules/react-quality.md) - Fix common Claude mistakes
 - [testing-quality](.claude/rules/testing-quality.md) - Nudge to use the architect and sets preferences
 - [typescript-quality](.claude/rules/typescript-quality.md) - Enforce a schema-first approach
@@ -76,7 +78,7 @@ Keep agents lean and in the background.
 Make them easy and predictable to use for humans and agents.
 
 - [commit](.claude/skills/commit/SKILL.md)
-- [docs](.claude/plugins/docs-review/skills/docs/SKILL.md)
+- [docs-review:check](.claude/plugins/docs-review/skills/check/SKILL.md)
 - [feedback-loop](.claude/skills/feedback-loop/SKILL.md)
 
 ### Mods
@@ -90,6 +92,8 @@ Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/market
 - [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, saved with thumbnails and refs to re-insert
 
   ![Mod panel with attachments](.claude/mods/attachments/larsmagnus-attachments.png)
+
+- [feedback-loop](.claude/mods/feedback-loop/README.md) - Reviews finished sessions in the background and keeps suggestions for you to approve in a pane
 
 - [release-highlights](.claude/mods/release-highlights/README.md) - Changelog highlights band above the prompt after Claude Code updates
 
