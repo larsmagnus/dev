@@ -229,10 +229,6 @@ export const register: Register = (on) => {
 		isPaneOffered = false
 		const stored = await $.fs.read(`${archiveDir}/index.json`).catch(() => '[]')
 		await update($, items, () => parseIndex(stored))
-		await $.command.register({
-			name: 'attachments',
-			description: 'Open the archive of everything attached to this session',
-		})
 
 		return next(e)
 	})
@@ -244,7 +240,7 @@ export const register: Register = (on) => {
 		return result
 	})
 
-	on('command.run', { command: 'attachments' }, async ($) => {
+	on('command.run', { command: 'attachments:open' }, async ($) => {
 		await openPane($)
 
 		return { text: 'Attachments pane opened.' }

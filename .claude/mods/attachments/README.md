@@ -4,6 +4,8 @@ Lists every image pasted or dropped into a session, and every existing file whos
 
 ![Mod panel with attachments](larsmagnus-attachments.png)
 
+`/attachments:open` opens the archive pane.
+
 ## Requirements
 
 macOS. `sips` makes thumbnails and reads image sizes. `base64 -D` decodes pasted images. Thumbnails need the kitty graphics protocol (Ghostty, kitty). Elsewhere entries show a text placeholder. Without `sips`, entries still list, just without thumbnails or dimensions.

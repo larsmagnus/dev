@@ -32,7 +32,6 @@ function resumed(on: On, entries: unknown[]) {
 	mock.env(on, { HOME: '/Users/ada' })
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
 	on('session.id', () => ({ value: 'session-123' }))
-	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('fs.read', () => ({ value: JSON.stringify(entries) }))
 	on('process.run', (_$, e) => {
 		ran.push(e.argv)

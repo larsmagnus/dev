@@ -18,7 +18,6 @@ function failing(on: On) {
 	mock.env(on, { HOME: '/Users/ada' })
 	on('session.start', (_$, e) => ({ cwd: e.cwd }))
 	on('session.id', () => ({ value: 'session-123' }))
-	on('command.register', (_$, e) => ({ value: { command: e.name } }))
 	on('fs.read', () => ({ value: '[]' }))
 	on('fs.write', (_$, e) => {
 		files[e.path] = e.text
