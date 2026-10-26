@@ -3,23 +3,16 @@ import { isRecord, isStringArray } from '../hooks/parse.ts'
 import type { Suggestion } from '../types'
 
 import { ask } from './ask.ts'
-import { EDIT_TOOLS, RESULTS_SCHEMA } from './schemas.ts'
+import { commit, isOutcome } from './edits.ts'
+import type { Outcome } from './edits.ts'
+import { READ_ONLY_TOOLS, RESULTS_SCHEMA } from './schemas.ts'
 import { readLedger, saveLedger } from './store.ts'
-
-type Outcome = { key: string; outcome: 'applied' | 'skipped'; note: string }
 
 export type Resolution = {
 	apply: string[]
 	decline: string[]
 	correction: string
 }
-
-/** Narrows one model result row. */
-const isOutcome = (value: unknown): value is Outcome =>
-	isRecord(value) &&
-	typeof value.key === 'string' &&
-	(value.outcome === 'applied' || value.outcome === 'skipped') &&
-	typeof value.note === 'string'
 
 /** Validates the `resolve` argument; throws on anything malformed. */
 export const parseResolution = (text: string): Resolution => {
@@ -39,7 +32,7 @@ export const parseResolution = (text: string): Resolution => {
 	}
 }
 
-/** Asks a headless editor to apply the ticked suggestions. Makes no call when none are ticked. */
+/** Asks a read-only headless Claude to propose edits for the ticked suggestions. Claude Code refuses headless writes under `.claude/`, so the mod writes them itself. Makes no call when none are ticked. */
 async function applyEdits(
 	keys: string[],
 	correction: string,
@@ -54,14 +47,14 @@ async function applyEdits(
 			(s) => `- ${s.key} [${s.type}]: ${s.finding}\n  action: ${s.action}`
 		),
 		'',
-		`User corrections: ${correction || '(none)'}`,
+		`User notes: ${correction || '(none)'}`,
 	].join('\n')
 	const output = await ask({
 		promptFile: 'apply.md',
 		prompt,
 		schema: RESULTS_SCHEMA,
-		tools: EDIT_TOOLS,
-		permissionMode: 'acceptEdits',
+		tools: READ_ONLY_TOOLS,
+		permissionMode: 'dontAsk',
 		model: 'sonnet',
 		budgetUsd: 2,
 		addDirs: [...new Set(chosen.map((s) => s.project))],
@@ -86,9 +79,22 @@ const outcomeLine = (key: string, outcomes: Outcome[]) => {
 export async function resolveSelection(request: Resolution): Promise<string> {
 	const now = Date.now()
 	const note = request.correction || undefined
-	const outcomes = (
-		await applyEdits(request.apply, request.correction, await readLedger())
+	const ledgerBefore = await readLedger()
+	const roots = [
+		...new Set(
+			ledgerBefore
+				.filter((s) => request.apply.includes(s.key))
+				.map((s) => s.project)
+		),
+	]
+	const proposed = (
+		await applyEdits(request.apply, request.correction, ledgerBefore)
 	).filter((o) => request.apply.includes(o.key))
+	// Sequential: suggestions may edit the same file, and each must see the last one's write.
+	const outcomes = await proposed.reduce<Promise<Outcome[]>>(
+		async (done, outcome) => [...(await done), await commit(outcome, roots)],
+		Promise.resolve([])
+	)
 	const applied = outcomes.filter((o) => o.outcome === 'applied')
 	const skipped = outcomes.filter((o) => o.outcome === 'skipped')
 

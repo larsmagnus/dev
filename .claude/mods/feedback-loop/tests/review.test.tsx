@@ -365,6 +365,42 @@ test('should show why a suggestion was left pending', async ($, on) => {
 	)
 })
 
+test('should show when the last review ran and how to start one while nothing is pending', async ($, on) => {
+	const lastRun = Date.UTC(2026, 9, 20, 22, 51)
+	const { clock } = withLedger(on, [], 0, null, lastRun)
+	await startSession($, clock)
+
+	const drawn = JSON.stringify(await (await mountPane($)).drawn())
+
+	expect(drawn).toContain('Nothing pending review.')
+	expect(drawn).toContain(`Last review: ${new Date(lastRun).toLocaleString()}`)
+	expect(drawn).toContain('Press Run now or use the /feedback-loop skill')
+	expect(drawn).not.toContain('"label":"Notes"')
+})
+
+test('should name today and yesterday in words for the last review', async ($, on) => {
+	const today = Date.now()
+	const { clock } = withLedger(on, [], 0, null, today)
+	await startSession($, clock)
+	expect(JSON.stringify(await (await mountPane($)).drawn())).toContain(
+		'Last review: Today, '
+	)
+})
+
+test('should say yesterday for a review the day before', async ($, on) => {
+	const { clock } = withLedger(
+		on,
+		[],
+		0,
+		null,
+		Date.now() - 24 * 60 * 60 * 1000
+	)
+	await startSession($, clock)
+	expect(JSON.stringify(await (await mountPane($)).drawn())).toContain(
+		'Last review: Yesterday, '
+	)
+})
+
 test('should hide the band once Review opens the pane', async ($, on) => {
 	const { clock } = withLedger(on, [pendingSuggestion('read-before-edit')])
 	await startSession($, clock)
@@ -392,13 +428,80 @@ test('should keep a report of what each suggestion came to in the pane until the
 	await pane.press({ key: 'apply' })
 	const drawn = JSON.stringify(await pane.drawn())
 
-	expect(drawn).toContain('1 applied, 1 not applied, 0 declined')
+	expect(drawn).toContain('"color":"success"},"children":["1 applied"]')
+	expect(drawn).toContain('"color":"warning"},"children":["1 not applied"]')
+	expect(drawn).toContain('"color":"error"},"children":["0 declined"]')
 	expect(drawn).toContain('+ read-before-edit: edited ~/.claude/CLAUDE.md')
 	expect(drawn).toContain('x terse-replies: target file is read-only')
 
 	await pane.press({ key: 'toggle:terse-replies' })
 
 	expect(JSON.stringify(await pane.drawn())).not.toContain('1 applied')
+})
+
+const SUMMARY = '1 applied, 0 not applied, 0 declined\n+ read-before-edit: done'
+
+const applyOne = async ($: Engine) => {
+	const pane = await mountPane($)
+	await pane.press({ key: 'toggle:read-before-edit' })
+	await pane.press({ key: 'apply' })
+	return pane
+}
+
+test('should close the result box from the x in its corner', async ($, on) => {
+	const { clock } = withLedger(
+		on,
+		[pendingSuggestion('read-before-edit')],
+		0,
+		null,
+		null,
+		SUMMARY
+	)
+	await startSession($, clock)
+	const pane = await applyOne($)
+	expect(JSON.stringify(await pane.drawn())).toContain('dismiss-report-x')
+
+	await pane.press({ key: 'dismiss-report-x' })
+
+	expect(JSON.stringify(await pane.drawn())).not.toContain('dismiss-report')
+})
+
+test('should close the result box from the Dismiss button below it', async ($, on) => {
+	const { clock } = withLedger(
+		on,
+		[pendingSuggestion('read-before-edit')],
+		0,
+		null,
+		null,
+		SUMMARY
+	)
+	await startSession($, clock)
+	const pane = await applyOne($)
+	expect(JSON.stringify(await pane.drawn())).toContain('"key":"dismiss-report"')
+
+	await pane.press({ key: 'dismiss-report' })
+
+	expect(JSON.stringify(await pane.drawn())).not.toContain('dismiss-report')
+})
+
+test('should draw a URL in the result box as a link', async ($, on) => {
+	const { clock } = withLedger(
+		on,
+		[pendingSuggestion('read-before-edit')],
+		0,
+		null,
+		null,
+		'1 applied, 0 not applied, 0 declined\n+ read-before-edit: see https://example.com/docs.'
+	)
+	await startSession($, clock)
+	const pane = await mountPane($)
+
+	await pane.press({ key: 'toggle:read-before-edit' })
+	await pane.press({ key: 'apply' })
+
+	expect(JSON.stringify(await pane.drawn())).toContain(
+		'"type":"Link","props":{"href":"https://example.com/docs"}'
+	)
 })
 
 test('should report a failed apply in the pane as well as the toast', async ($, on) => {

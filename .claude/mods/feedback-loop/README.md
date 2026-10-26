@@ -13,7 +13,7 @@ Then run `/feedback-loop:install`, or press `Enable weekly run` in the pane. It 
 
 ## Use
 
-When suggestions are pending, a band above the prompt offers `Review`. `/feedback-loop:open` opens the same pane any time. Tick suggestions, add a free-text correction, then `Apply` or `Decline`. Unticked ones stay pending. `Run now` collects immediately.
+When suggestions are pending, a band above the prompt offers `Review`. `/feedback-loop:open` opens the same pane any time. Tick suggestions, add notes, then `Apply` or `Decline`. Unticked ones stay pending. `Run now` collects immediately.
 
 `/feedback-loop [comment]` stays the interactive, single-session review. It reads the ledger so it doesn't repeat what is already pending.
 
@@ -23,7 +23,7 @@ When suggestions are pending, a band above the prompt offers `Review`. `/feedbac
 - **Due after a batch of sessions, or a week.** Whichever comes first. A minimum gap between runs stops a failing run retrying on every session end. The weekly job covers weeks where you open few sessions.
 - **One worker, three triggers.** The session hooks, the pane and launchd all start `scripts/run.ts`. It takes a lock, so triggers can fire freely, and it is the only writer of the ledger.
 - **Headless sessions are never queued.** Otherwise each review would queue itself.
-- **Report only, until you decide.** The collector can only read. Applying is a separate run, started from the pane with your ticks and corrections, and your correction overrides a suggestion's own wording.
+- **Report only, until you decide.** The collector can only read. Applying is a separate run, started from the pane with your ticks and notes, and a note that conflicts with a suggestion overrides its own wording.
 
 ## The store
 

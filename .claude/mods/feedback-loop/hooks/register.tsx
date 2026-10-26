@@ -13,6 +13,7 @@ const suggestions = atom(
 	{ plugin: 'feedback-loop', key: 'suggestions' } as const,
 	[]
 )
+const lastRun = atom({ plugin: 'feedback-loop', key: 'lastRun' } as const, null)
 const selected = atom({ plugin: 'feedback-loop', key: 'selected' } as const, [])
 const correction = atom(
 	{ plugin: 'feedback-loop', key: 'correction' } as const,
@@ -54,12 +55,13 @@ async function syncSchedule($: EngineInterface) {
 		await startWorker($, 'install-schedule')
 }
 
-/** Re-reads the ledger; the worker owns writes, so the pane only ever displays what is on disk. */
+/** Re-reads the ledger and last run time; the worker owns writes, so the pane only ever displays what is on disk. */
 async function reload($: EngineInterface) {
-	const text = await $.fs
-		.read(`${await storeDir($)}/suggestions.jsonl`)
-		.catch(() => '')
+	const dir = await storeDir($)
+	const text = await $.fs.read(`${dir}/suggestions.jsonl`).catch(() => '')
+	const state = parseState(await $.fs.read(`${dir}/state.json`).catch(() => ''))
 	await update($, suggestions, () => parseSuggestions(text))
+	await update($, lastRun, () => state.lastRun)
 }
 
 /** Starts the worker detached, so it outlives a session that is closing; the worker itself decides whether a run is due. */
@@ -133,6 +135,9 @@ async function settle($: EngineInterface, decision: 'apply' | 'decline') {
 		await reload($)
 	}
 }
+
+/** Closes the result box; the ledger already holds the outcome. */
+const dismissReport = ($: EngineInterface) => () => update($, report, () => [])
 
 /** Flips one suggestion's tick. */
 const toggle = ($: EngineInterface) => (key: string) => async () => {
@@ -256,6 +261,7 @@ export const register: Register = (on) => {
 			correction: await read($, correction),
 			busy: await read($, busy),
 			isScheduled: await read($, isScheduled),
+			lastRun: await read($, lastRun),
 			report: await read($, report),
 		}
 
@@ -266,6 +272,7 @@ export const register: Register = (on) => {
 			decline: settleWith($, 'decline'),
 			run: forceRun($),
 			refresh: refresh($),
+			dismissReport: dismissReport($),
 			enableSchedule: enableSchedule($),
 		})
 	})

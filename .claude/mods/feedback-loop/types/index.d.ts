@@ -54,6 +54,7 @@ declare module 'claude-code' {
 			isDismissed: boolean
 			isInteractive: boolean
 			isScheduled: boolean
+			lastRun: number | null
 			report: string[]
 		}
 	}
