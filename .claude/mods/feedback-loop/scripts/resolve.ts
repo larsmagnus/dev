@@ -1,11 +1,9 @@
 import { resolve, skip } from '../hooks/ledger.ts'
 import { isRecord, isStringArray } from '../hooks/parse.ts'
-import type { Suggestion } from '../types'
 
-import { ask } from './ask.ts'
-import { commit, isOutcome } from './edits.ts'
+import { commit } from './edits.ts'
 import type { Outcome } from './edits.ts'
-import { READ_ONLY_TOOLS, RESULTS_SCHEMA } from './schemas.ts'
+import { proposeEdits } from './propose.ts'
 import { readLedger, saveLedger } from './store.ts'
 
 export type Resolution = {
@@ -32,41 +30,6 @@ export const parseResolution = (text: string): Resolution => {
 	}
 }
 
-/** Asks a read-only headless Claude to propose edits for the ticked suggestions. Claude Code refuses headless writes under `.claude/`, so the mod writes them itself. Makes no call when none are ticked. */
-async function applyEdits(
-	keys: string[],
-	correction: string,
-	ledger: Suggestion[]
-) {
-	if (keys.length === 0) return []
-
-	const chosen = ledger.filter((s) => keys.includes(s.key))
-	const prompt = [
-		'Suggestions to apply:',
-		...chosen.map(
-			(s) => `- ${s.key} [${s.type}]: ${s.finding}\n  action: ${s.action}`
-		),
-		'',
-		`User notes: ${correction || '(none)'}`,
-	].join('\n')
-	const output = await ask({
-		promptFile: 'apply.md',
-		prompt,
-		schema: RESULTS_SCHEMA,
-		tools: READ_ONLY_TOOLS,
-		permissionMode: 'dontAsk',
-		model: 'sonnet',
-		budgetUsd: 2,
-		addDirs: [...new Set(chosen.map((s) => s.project))],
-		// Under the pane's own ten-minute wait, so the lock is released before the pane gives up.
-		timeoutMs: 9 * 60 * 1000,
-	})
-	if (!isRecord(output) || !Array.isArray(output.results))
-		throw new Error('applier returned no results array')
-
-	return output.results.filter(isOutcome)
-}
-
 /** One report line per ticked suggestion; a key the applier never mentioned reads as not applied. */
 const outcomeLine = (key: string, outcomes: Outcome[]) => {
 	const outcome = outcomes.find((o) => o.key === key)
@@ -88,7 +51,7 @@ export async function resolveSelection(request: Resolution): Promise<string> {
 		),
 	]
 	const proposed = (
-		await applyEdits(request.apply, request.correction, ledgerBefore)
+		await proposeEdits(request.apply, request.correction, ledgerBefore)
 	).filter((o) => request.apply.includes(o.key))
 	// Sequential: suggestions may edit the same file, and each must see the last one's write.
 	const outcomes = await proposed.reduce<Promise<Outcome[]>>(
