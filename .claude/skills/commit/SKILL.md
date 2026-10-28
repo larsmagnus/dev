@@ -1,6 +1,6 @@
 ---
 name: commit
-description: Creates a GitHub pull request
+description: Creates conventional commits from staged or unstaged changes
 allowed-tools: Bash(git log *), Bash(git add *), Bash(git commit *), Bash(git diff *)
 ---
 
