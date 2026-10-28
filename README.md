@@ -89,9 +89,10 @@ Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/market
 
   ![Mod panel with agent-dock](.claude/mods/agent-dock/larsmagnus-agent-dock.png)
 
-- [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, saved with thumbnails and refs to re-insert
+- [attachments](.claude/mods/attachments/README.md) - Every image and file you attach, previewed while you type and saved with thumbnails and refs to re-insert
 
   ![Mod panel with attachments](.claude/mods/attachments/larsmagnus-attachments.png)
+  ![Band above the prompt with attachments](.claude/mods/attachments/larsmagnus-attachments-preview.png)
 
 - [feedback-loop](.claude/mods/feedback-loop/README.md) - Reviews finished sessions in the background and keeps suggestions for you to approve in a pane
 

@@ -18,6 +18,7 @@ declare module 'claude-code' {
 	interface PluginState {
 		attachments: {
 			items: Attachment[]
+			draft: Attachment[]
 		}
 	}
 }

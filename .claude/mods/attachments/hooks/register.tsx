@@ -1,5 +1,5 @@
 import { atom, read, update } from 'claude-code'
-import type { Args, EngineInterface, Register } from 'claude-code'
+import type { Args, EngineInterface, Register, Timer } from 'claude-code'
 
 import type { Attachment } from '../types'
 
@@ -13,17 +13,29 @@ import {
 } from './capture'
 import type { Pending } from './capture'
 import { contextAround } from './context'
+import { draftImageNumbers } from './draft'
+import {
+	draftFactsOf,
+	draftFiles,
+	draftPastes,
+	forgetSession,
+} from './draft-sources'
+import { draftTile } from './draft-tile'
 import { droppedPaths } from './dropped'
 import { entryRow } from './entry-row'
 import { promptRef } from './format'
+import { measure, openOrReveal, tryRun } from './host'
 import { stemOf } from './refs'
-import { parseSize, sizeArgv, thumbArgv } from './sips'
 
 const PANE = 'attachments'
+const POLL_MS = 200
 const items = atom({ plugin: 'attachments', key: 'items' } as const, [])
+const draft = atom({ plugin: 'attachments', key: 'draft' } as const, [])
 
 let archiveDir = ''
 let isPaneOffered = false
+let syncedDraft: string | undefined
+let stopPolling: Timer | undefined
 
 /** Opens the pane. A refusal to place it is swallowed, since the person can still open it with `/attachments`. */
 const openPane = ($: EngineInterface) =>
@@ -42,16 +54,6 @@ const persist = async ($: EngineInterface, dir = archiveDir) => {
 	)
 }
 
-/** Runs a host command, treating one that cannot start (no `sips` off macOS) as a failed run. */
-const tryRun = ($: EngineInterface, argv: string[], stdin?: string) =>
-	$.process.run(argv, { stdin }).catch(() => ({ exitCode: -1, stdout: '' }))
-
-/** Opens a file in its default app, or reveals it in Finder when no app takes it. */
-const openOrReveal = async ($: EngineInterface, path: string) => {
-	const opened = await tryRun($, ['open', path])
-	if (opened.exitCode !== 0) await tryRun($, ['open', '-R', path])
-}
-
 /** Merges facts measured after listing into one entry. */
 const patch = ($: EngineInterface, path: string, change: Partial<Attachment>) =>
 	update($, items, (list) =>
@@ -66,21 +68,12 @@ const addEntries = async ($: EngineInterface, entries: Attachment[]) => {
 	void openPane($)
 }
 
-/** Writes a file's thumbnail and, for a picture, measures it. */
+/** Records what `measure` learned about an archived entry. */
 const thumbnail = async (
 	$: EngineInterface,
-	{ path, mediaType }: Pick<Attachment, 'path' | 'mediaType'>,
+	one: Pick<Attachment, 'path' | 'mediaType'>,
 	thumbPath: string
-) => {
-	const [sized, thumbed] = await Promise.all([
-		mediaType.startsWith('image/') ? tryRun($, sizeArgv(path)) : undefined,
-		tryRun($, thumbArgv(path, thumbPath)),
-	])
-	await patch($, path, {
-		...(sized && parseSize(sized.stdout)),
-		...(thumbed.exitCode === 0 && { thumbPath }),
-	})
-}
+) => patch($, one.path, await measure($, one, thumbPath))
 
 /** Decodes one attachment to disk, since a pasted image exists only as base64 in the transcript. One that cannot be decoded is dropped, so no entry points at a missing file. */
 const save = async ($: EngineInterface, one: Pending, path: string) => {
@@ -222,11 +215,37 @@ const track = async (
 	await persist($)
 }
 
+/** Shows the images and files the draft names above the prompt. Pasting raises no `prompt.edit`, so the draft is polled. A sent or cleared draft names nothing, so its tiles go with it. A draft whose pastes are not cached yet is looked at again. */
+const syncDraft = async ($: EngineInterface) => {
+	const { text } = await $.prompt.read()
+	if (text === syncedDraft) return
+	const addedAt = await $.clock.now()
+	const numbers = draftImageNumbers(text)
+	const pastes = await draftPastes($, numbers)
+	const named = [...pastes, ...(await draftFiles($, text))]
+	const entries: Attachment[] = await Promise.all(
+		named.map(async (one) => ({
+			...one,
+			addedAt,
+			...(await draftFactsOf($, one, archiveDir)),
+		}))
+	)
+	await update($, draft, () => entries)
+	if (pastes.length === numbers.length) syncedDraft = text
+}
+
 /** Archives every image and file the person puts in the session's main conversation, and lists them in a pane. */
 export const register: Register = (on) => {
 	on('session.start', async ($, e, next) => {
 		archiveDir = `${await $.env.get('HOME')}/.claude/attachments/${await $.session.id()}`
 		isPaneOffered = false
+		syncedDraft = undefined
+		forgetSession()
+		stopPolling?.cancel()
+		stopPolling = $.clock.every(
+			POLL_MS,
+			() => void syncDraft($).catch(logFailure($))
+		)
 		const stored = await $.fs.read(`${archiveDir}/index.json`).catch(() => '[]')
 		await update($, items, () => parseIndex(stored))
 
@@ -247,12 +266,34 @@ export const register: Register = (on) => {
 	})
 
 	on('ui.message', async ($, e, next) => {
-		if (e.requestId !== PANE || !e.element.startsWith('thumb:')) return next(e)
+		const isBand = e.component === 'AbovePrompt'
+		if (!isBand && e.requestId !== PANE) return next(e)
+		if (!e.element.startsWith('thumb:')) return next(e)
 
 		const path = e.element.slice('thumb:'.length)
-		const item = (await read($, items)).find((one) => one.path === path)
+		const shown = isBand ? await read($, draft) : await read($, items)
+		const item = shown.find((one) => one.path === path)
 		if (item) await openOrReveal($, item.path)
 		return {}
+	})
+
+	on('ui.render', { component: 'AbovePrompt' }, async ($, e, next) => {
+		if (e.surface !== 'terminal' || e.props.hasSurvey) return next(e)
+		const list = await read($, draft)
+		if (list.length === 0) return next(e)
+
+		const ui = $.ui.resolve(e)
+		const { Box } = ui
+		const below = await next(e)
+
+		return (
+			<Box flexDirection="column">
+				<Box flexDirection="row" flexWrap="wrap" columnGap={1}>
+					{list.map((item) => draftTile(ui, item))}
+				</Box>
+				{below}
+			</Box>
+		)
 	})
 
 	on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
