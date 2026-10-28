@@ -1,0 +1,23 @@
+{
+	"name": "diagrams",
+	"description": "Renders mermaid and drawio code blocks in Claude's replies as inline images, with the source one press away",
+	"author": {
+		"name": "Lars Magnus Klavenes"
+	},
+	"types": "./types/index.d.ts",
+	"userConfig": {
+		"theme": {
+			"type": "string",
+			"title": "Diagram theme",
+			"description": "Colours for mermaid and drawio diagrams, on a transparent background.",
+			"options": ["dark", "light"],
+			"default": "dark"
+		},
+		"chromePath": {
+			"type": "string",
+			"title": "Chrome executable",
+			"description": "Chromium-based browser used to draw diagrams. Empty finds Chrome, Chromium, Brave or Edge in /Applications.",
+			"default": ""
+		}
+	}
+}

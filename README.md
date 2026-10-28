@@ -100,6 +100,10 @@ Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/market
   ![Mod panel with attachments](.claude/mods/attachments/larsmagnus-attachments.png)
   ![Band above the prompt with attachments](.claude/mods/attachments/larsmagnus-attachments-preview.png)
 
+- [diagrams](.claude/mods/diagrams/README.md) - Mermaid and drawio code blocks in replies drawn as inline pictures, with the source one press away
+
+  ![Mermaid and drawio diagrams drawn inline with diagrams](.claude/mods/diagrams/larsmagnus-diagrams.png)
+
 - [feedback-loop](.claude/mods/feedback-loop/README.md) - Reviews finished sessions in the background and keeps suggestions for you to approve in a pane
 
   ![Mod panel with feedback-loop](.claude/mods/feedback-loop/larsmagnus-feedback-loop-panel.png)
