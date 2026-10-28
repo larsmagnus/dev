@@ -31,6 +31,8 @@ claude plugin install docs-review@larsmagnus
 
 Requires Node 22.18 or newer.
 
+Run `/feedback-loop:install` to enable the weekly background review.
+
 ### Updating
 
 The plugins are not versioned. Every commit on main counts as a new version.
@@ -60,7 +62,7 @@ Do as much deterministic work as possible with hooks.
 
 Prefer deterministic work in hooks, linting and formatting before rules.
 
-- [claude-extensions](.claude/rules/claude-extensions.md) - Naming and layout for skills, plugins and mods
+- [claude-extensions](.claude/rules/claude-extensions.md) - Command naming, sibling conventions and rename propagation for skills, plugins and mods
 - [react-quality](.claude/rules/react-quality.md) - Fix common Claude mistakes
 - [testing-quality](.claude/rules/testing-quality.md) - Nudge to use the architect and sets preferences
 - [typescript-quality](.claude/rules/typescript-quality.md) - Enforce a schema-first approach
@@ -70,7 +72,7 @@ Prefer deterministic work in hooks, linting and formatting before rules.
 Keep agents lean and in the background.
 
 - [content-architect](.claude/agents/content-architect.md) - Understand large-scale content structures with minimal context use
-- [docs-architect](.claude/plugins/docs-review/agents/docs-architect.md) - Write crystal clear docs and treat code as the source of truth
+- [docs-review:docs-architect](.claude/plugins/docs-review/agents/docs-architect.md) - Write crystal clear docs and treat code as the source of truth
 - [test-architect](.claude/agents/test-architect.md) - Make tests that give you confidence to change
 
 ### Skills
@@ -79,7 +81,11 @@ Make them easy and predictable to use for humans and agents.
 
 - [commit](.claude/skills/commit/SKILL.md)
 - [docs-review:check](.claude/plugins/docs-review/skills/check/SKILL.md)
-- [feedback-loop](.claude/skills/feedback-loop/SKILL.md)
+- [feedback-loop](.claude/skills/feedback-loop/SKILL.md) - Interactive review of a single session
+- [feedback-loop:install](.claude/mods/feedback-loop/commands/install.md) - Turn on the weekly feedback-loop run
+- [feedback-loop:open](.claude/mods/feedback-loop/commands/open.md) - Review pending suggestions
+- [attachments:open](.claude/mods/attachments/commands/open.md) - Open the archive of attachments
+- [agent-dock:toggle](.claude/mods/agent-dock/commands/toggle.md), [agent-dock:layout](.claude/mods/agent-dock/commands/layout.md), [agent-dock:set-host](.claude/mods/agent-dock/commands/set-host.md) - Control the dock pane
 
 ### Mods
 
