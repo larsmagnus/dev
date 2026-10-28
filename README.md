@@ -96,6 +96,9 @@ Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/market
 
 - [feedback-loop](.claude/mods/feedback-loop/README.md) - Reviews finished sessions in the background and keeps suggestions for you to approve in a pane
 
+  ![Mod panel with feedback-loop](.claude/mods/feedback-loop/larsmagnus-feedback-loop-panel.png)
+  ![Band above the prompt with feedback-loop](.claude/mods/feedback-loop/larsmagnus-feedback-loop-inline.png)
+
 - [release-highlights](.claude/mods/release-highlights/README.md) - Changelog highlights band above the prompt after Claude Code updates
 
   ![Band above the prompt with release-highlights](.claude/mods/release-highlights/larsmagnus-release-highlights.png)

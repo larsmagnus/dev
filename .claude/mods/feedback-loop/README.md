@@ -2,6 +2,9 @@
 
 Reviews finished Claude sessions in the background and keeps the suggestions for you to approve. Nothing is applied without your approval.
 
+![Mod panel with feedback-loop](larsmagnus-feedback-loop-panel.png)
+![Band above the prompt with feedback-loop](larsmagnus-feedback-loop-inline.png)
+
 ## Install
 
 ```sh
