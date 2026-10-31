@@ -31,10 +31,10 @@ function drawing(
 	const clock = mock.clock(on, { now: new Date(2026, 9, 28, 21, 30).getTime() })
 	mock.env(on, { HOME: '/Users/ada' })
 	on('session.id', () => ({ value: 'session-1' }))
-	on('ui.render', { component: 'AssistantMessage' }, ($, e) => {
-		const { Text } = $.ui.resolve(e)
-		return <Text>engine drawing</Text>
-	})
+	on('ui.render', { component: 'AssistantMessage' }, () => ({
+		type: 'engine',
+		ref: 0,
+	}))
 	on('fs.stat', (_$, e) =>
 		(isChromeInstalled && e.path === CHROME) ||
 		e.path.endsWith('.png') ||
@@ -89,7 +89,7 @@ test('should leave a reply without a diagram to the engine', async ($, on) => {
 
 	const ui = await mountReply($, 'The migration finished in 42 seconds.')
 
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 	expect(ran).toEqual([])
 })
 
@@ -101,7 +101,7 @@ test('should leave a summary to the engine', async ($, on) => {
 	})
 	await settle(clock)
 
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 	expect(ran).toEqual([])
 })
 
@@ -110,7 +110,7 @@ test('should leave the source to the engine until the diagram has drawn', async 
 
 	const ui = await mountReply($, `Flow:\n${flowFence('C1')}`)
 
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 	expect(ran).toEqual([])
 })
 
@@ -153,7 +153,7 @@ test('should keep the source and not retry when the diagram fails to draw', asyn
 	await mountReply($, text)
 	await settle(clock)
 
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 	expect(await ui.find({ type: 'Image' })).toBeUndefined()
 	expect(ran.length).toBe(runsAfterFailure)
 })
@@ -167,7 +167,7 @@ test('should toast once when no Chrome is found, across two diagrams', async ($,
 	expect(toasts).toEqual([
 		'diagrams: no Chrome found, set chromePath in /config',
 	])
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 })
 
 test('should toast once to run the install skill when the libraries are missing', async ($, on) => {
@@ -178,7 +178,7 @@ test('should toast once to run the install skill when the libraries are missing'
 
 	expect(toasts).toEqual(['diagrams: libraries missing, run /diagrams:install'])
 	expect(ran).toEqual([])
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 })
 
 test('should leave a reply to the engine on the desktop surface', async ($, on) => {
@@ -189,7 +189,7 @@ test('should leave a reply to the engine on the desktop surface', async ($, on) 
 	})
 	await settle(clock)
 
-	expect(await drawnJson(ui)).toContain('engine drawing')
+	expect(await drawnJson(ui)).toContain('"type":"engine"')
 	expect(ran).toEqual([])
 })
 
@@ -326,4 +326,38 @@ test('should open the picture when the overlay on it is pressed', async ($, on) 
 		'open',
 		`/Users/ada/.claude/diagrams/${diagram.hash}-dark.png`,
 	])
+})
+
+test('should replace the engine drawing and keep its siblings when a mod beneath wraps it', async ($, on) => {
+	on(
+		'ui.render',
+		{ component: 'AssistantMessage' },
+		async (engine, e, next) => {
+			const { Box, Text } = engine.ui.resolve(e)
+			return (
+				<Box flexDirection="column">
+					{await next(e)}
+					<Text>[ copy ]</Text>
+				</Box>
+			)
+		}
+	)
+	const { clock } = drawing(on)
+
+	const ui = await mountReply($, `Flow:\n${flowFence('W1')}`)
+	await settle(clock)
+
+	const drawn = await drawnJson(ui)
+	expect(await ui.find({ type: 'Image' })).toBeDefined()
+	expect(drawn).toContain('[ copy ]')
+	expect(drawn).not.toContain('"type":"engine"')
+})
+
+test('should start the drawing with a top margin', async ($, on) => {
+	const { clock } = drawing(on)
+
+	const ui = await mountReply($, `Flow:\n${flowFence('M1')}`)
+	await settle(clock)
+
+	expect(await drawnJson(ui)).toContain('"marginTop":1')
 })

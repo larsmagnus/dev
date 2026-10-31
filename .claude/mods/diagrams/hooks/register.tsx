@@ -1,5 +1,10 @@
 import { atom, read, update } from 'claude-code'
-import type { EngineInterface, Register, UiPressArgument } from 'claude-code'
+import type {
+	EngineInterface,
+	Register,
+	RenderElement,
+	UiPressArgument,
+} from 'claude-code'
 
 import type { Rendered } from '../types'
 
@@ -99,6 +104,21 @@ async function drawOnce(
 	}
 }
 
+/** Other mods may wrap the engine's node in any order, so this swaps only that node for the drawing. */
+const inEngineSlot = (
+	node: RenderElement,
+	drawing: RenderElement
+): RenderElement => {
+	if (node.type === 'engine') return drawing
+	if (node.type !== 'Box') return node
+	return {
+		...node,
+		children: node.children?.map((child) =>
+			typeof child === 'string' ? child : inEngineSlot(child, drawing)
+		),
+	}
+}
+
 /** Replaces mermaid and drawio code blocks in a reply with pictures drawn by headless Chrome. */
 export const register: Register = (on, options) => {
 	const theme = options.theme === 'light' ? 'light' : 'dark'
@@ -143,8 +163,8 @@ export const register: Register = (on, options) => {
 		if (!diagrams.some((diagram) => drawn[keyOf(diagram, theme)]))
 			return next(e)
 
-		return (
-			<Box flexDirection="column">
+		const drawing = (
+			<Box flexDirection="column" marginTop={1}>
 				{segments.map((segment, i) => {
 					if (segment.kind === 'text')
 						return <Markdown key={`text:${i}`} text={segment.text} />
@@ -169,5 +189,7 @@ export const register: Register = (on, options) => {
 				})}
 			</Box>
 		)
+
+		return inEngineSlot(await next(e), drawing)
 	})
 }
