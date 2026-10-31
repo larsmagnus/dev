@@ -4,6 +4,7 @@
 	"plugins": [
 		{ "name": "agent-dock", "source": "./.claude/mods/agent-dock" },
 		{ "name": "attachments", "source": "./.claude/mods/attachments" },
+		{ "name": "copy-button", "source": "./.claude/mods/copy-button" },
 		{ "name": "diagrams", "source": "./.claude/mods/diagrams" },
 		{ "name": "feedback-loop", "source": "./.claude/mods/feedback-loop" },
 		{

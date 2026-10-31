@@ -1,0 +1,15 @@
+{
+	"name": "copy-button",
+	"description": "A copy button on each of Claude's messages that puts its markdown on the clipboard",
+	"author": {
+		"name": "Lars Magnus Klavenes"
+	},
+	"userConfig": {
+		"longMessageChars": {
+			"type": "number",
+			"title": "Long message length",
+			"description": "Messages of at least this many characters, or taller than the screen, get a second button below.",
+			"default": 2000
+		}
+	}
+}

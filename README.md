@@ -23,6 +23,8 @@ The setup I use every day for work.
 claude plugin marketplace add larsmagnus/dev
 claude plugin install agent-dock@larsmagnus
 claude plugin install attachments@larsmagnus
+claude plugin install copy-button@larsmagnus
+claude plugin install diagrams@larsmagnus
 claude plugin install feedback-loop@larsmagnus
 claude plugin install release-highlights@larsmagnus
 claude plugin install code-quality@larsmagnus
@@ -99,6 +101,10 @@ Change Claude's own interface. Shipped as the [larsmagnus](.claude-plugin/market
 
   ![Mod panel with attachments](.claude/mods/attachments/larsmagnus-attachments.png)
   ![Band above the prompt with attachments](.claude/mods/attachments/larsmagnus-attachments-preview.png)
+
+- [copy-button](.claude/mods/copy-button/README.md) - A copy button on each of Claude's messages that puts its markdown on the clipboard
+
+  ![Green copy buttons on messages, with a toast confirming the copy](.claude/mods/copy-button/larsmagnus-copy-button.png)
 
 - [diagrams](.claude/mods/diagrams/README.md) - Mermaid and drawio code blocks in replies drawn as inline pictures, with the source one press away
 
